@@ -1,0 +1,154 @@
+---
+title: Variables de Entorno
+description: Todas las variables de entorno necesarias para EmpiezaTuSaaS
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+# Variables de Entorno
+
+EmpiezaTuSaaS utiliza variables de entorno para configurar servicios externos y mantener seguras tus credenciales.
+
+## Archivo .env.local
+
+Crea un archivo `.env.local` en la raíz del proyecto:
+
+```bash
+cp .env.example .env.local
+```
+
+<Callout type="error">
+  Nunca subas `.env.local` a tu repositorio. Contiene información sensible.
+</Callout>
+
+## Variables requeridas
+
+<Tabs items={['Better Auth + PostgreSQL', 'Supabase']}>
+  <Tab value="Better Auth + PostgreSQL">
+    ```bash title=".env.local"
+    # App
+    NEXT_PUBLIC_APP_URL="http://localhost:3000"
+
+    # Database
+    DATABASE_URL="postgresql://user:password@localhost:5432/empiezatusaas"
+
+    # Better Auth
+    BETTER_AUTH_SECRET="tu-secreto-seguro-de-32-caracteres"
+    BETTER_AUTH_URL="http://localhost:3000"
+
+    # OAuth Providers (opcional)
+    GOOGLE_CLIENT_ID=""
+    GOOGLE_CLIENT_SECRET=""
+    GITHUB_CLIENT_ID=""
+    GITHUB_CLIENT_SECRET=""
+
+    # Stripe
+    STRIPE_SECRET_KEY="sk_test_..."
+    STRIPE_WEBHOOK_SECRET="whsec_..."
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_test_..."
+
+    # Resend
+    RESEND_API_KEY="re_..."
+    EMAIL_FROM="noreply@tudominio.com"
+    ```
+  </Tab>
+
+  <Tab value="Supabase">
+    ```bash title=".env.local"
+    # App
+    NEXT_PUBLIC_APP_URL="http://localhost:3000"
+
+    # Supabase
+    NEXT_PUBLIC_SUPABASE_URL="https://xxx.supabase.co"
+    NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJ..."
+    SUPABASE_SERVICE_ROLE_KEY="eyJ..."
+
+    # OAuth en Supabase (configurar en dashboard)
+    # No necesitas variables aquí, se configura en el dashboard
+
+    # Stripe
+    STRIPE_SECRET_KEY="sk_test_..."
+    STRIPE_WEBHOOK_SECRET="whsec_..."
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_test_..."
+
+    # Resend
+    RESEND_API_KEY="re_..."
+    EMAIL_FROM="noreply@tudominio.com"
+    ```
+  </Tab>
+</Tabs>
+
+## Descripción de variables
+
+### App
+
+| Variable | Descripción | Ejemplo |
+|----------|-------------|---------|
+| `NEXT_PUBLIC_APP_URL` | URL pública de tu app | `https://tuapp.com` |
+
+### Base de datos
+
+| Variable | Descripción | Requerido por |
+|----------|-------------|---------------|
+| `DATABASE_URL` | URL de conexión PostgreSQL | Better Auth |
+| `NEXT_PUBLIC_SUPABASE_URL` | URL del proyecto Supabase | Supabase |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clave pública de Supabase | Supabase |
+| `SUPABASE_SERVICE_ROLE_KEY` | Clave de servicio (backend) | Supabase |
+
+### Autenticación
+
+| Variable | Descripción |
+|----------|-------------|
+| `BETTER_AUTH_SECRET` | Secreto para firmar tokens (mín. 32 caracteres) |
+| `BETTER_AUTH_URL` | URL base para callbacks de auth |
+
+### OAuth Providers
+
+| Variable | Cómo obtenerla |
+|----------|----------------|
+| `GOOGLE_CLIENT_ID` | [Google Cloud Console](https://console.cloud.google.com/) |
+| `GOOGLE_CLIENT_SECRET` | [Google Cloud Console](https://console.cloud.google.com/) |
+| `GITHUB_CLIENT_ID` | [GitHub Developer Settings](https://github.com/settings/developers) |
+| `GITHUB_CLIENT_SECRET` | [GitHub Developer Settings](https://github.com/settings/developers) |
+
+### Stripe
+
+| Variable | Cómo obtenerla |
+|----------|----------------|
+| `STRIPE_SECRET_KEY` | [Stripe Dashboard > API Keys](https://dashboard.stripe.com/apikeys) |
+| `STRIPE_WEBHOOK_SECRET` | [Stripe Dashboard > Webhooks](https://dashboard.stripe.com/webhooks) |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | [Stripe Dashboard > API Keys](https://dashboard.stripe.com/apikeys) |
+
+<Callout type="info">
+  En desarrollo, usa las claves de test de Stripe (`sk_test_`, `pk_test_`).
+</Callout>
+
+### Resend
+
+| Variable | Cómo obtenerla |
+|----------|----------------|
+| `RESEND_API_KEY` | [Resend Dashboard > API Keys](https://resend.com/api-keys) |
+| `EMAIL_FROM` | Email verificado en Resend |
+
+## Generar secretos seguros
+
+Para generar un secreto seguro para `BETTER_AUTH_SECRET`:
+
+```bash
+openssl rand -base64 32
+```
+
+O usando Node.js:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+## Variables en producción
+
+En producción (Vercel, etc.), configura las variables en:
+
+1. **Vercel**: Settings > Environment Variables
+2. Usa valores de producción (no test)
+3. Actualiza `NEXT_PUBLIC_APP_URL` a tu dominio real

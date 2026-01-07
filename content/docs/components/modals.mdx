@@ -1,0 +1,246 @@
+---
+title: Modales
+description: Diálogos y sheets para contenido modal
+---
+
+# Modales
+
+Componentes para mostrar contenido modal: diálogos centrados y sheets laterales.
+
+## Dialog
+
+```bash
+npx shadcn@latest add dialog
+```
+
+```tsx title="components/confirm-dialog.tsx"
+"use client";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+
+export function ConfirmDialog({
+  onConfirm,
+  children,
+}: {
+  onConfirm: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Esta acción no se puede deshacer.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm}>Confirmar</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+```
+
+### Uso
+
+```tsx
+<ConfirmDialog onConfirm={() => deleteItem(id)}>
+  <Button variant="destructive">Eliminar</Button>
+</ConfirmDialog>
+```
+
+## Dialog con formulario
+
+```tsx title="components/edit-dialog.tsx"
+"use client";
+
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+export function EditDialog({
+  title,
+  defaultValue,
+  onSave,
+}: {
+  title: string;
+  defaultValue: string;
+  onSave: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState(defaultValue);
+
+  const handleSave = () => {
+    onSave(value);
+    setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline">Editar</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Editar {title}</DialogTitle>
+          <DialogDescription>
+            Haz los cambios necesarios y guarda.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="name">{title}</Label>
+            <Input
+              id="name"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancelar
+          </Button>
+          <Button onClick={handleSave}>Guardar</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+```
+
+## Sheet (panel lateral)
+
+```bash
+npx shadcn@latest add sheet
+```
+
+```tsx title="components/mobile-nav.tsx"
+"use client";
+
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Menu } from "lucide-react";
+import Link from "next/link";
+
+const links = [
+  { href: "/", label: "Inicio" },
+  { href: "/features", label: "Features" },
+  { href: "/pricing", label: "Pricing" },
+  { href: "/docs", label: "Docs" },
+];
+
+export function MobileNav() {
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="ghost" size="icon" className="md:hidden">
+          <Menu className="h-6 w-6" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left">
+        <SheetHeader>
+          <SheetTitle>Menú</SheetTitle>
+        </SheetHeader>
+        <nav className="flex flex-col gap-4 mt-8">
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-lg hover:text-primary transition-colors"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+      </SheetContent>
+    </Sheet>
+  );
+}
+```
+
+## Sheet para filtros
+
+```tsx title="components/filters-sheet.tsx"
+"use client";
+
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetFooter,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { SlidersHorizontal } from "lucide-react";
+
+export function FiltersSheet() {
+  return (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="outline" size="sm">
+          <SlidersHorizontal className="w-4 h-4 mr-2" />
+          Filtros
+        </Button>
+      </SheetTrigger>
+      <SheetContent>
+        <SheetHeader>
+          <SheetTitle>Filtros</SheetTitle>
+        </SheetHeader>
+        <div className="py-6 space-y-6">
+          <div className="space-y-4">
+            <h4 className="font-medium">Categoría</h4>
+            <div className="space-y-2">
+              {["Todos", "Starter", "Pro", "Enterprise"].map((cat) => (
+                <div key={cat} className="flex items-center space-x-2">
+                  <Checkbox id={cat} />
+                  <label htmlFor={cat} className="text-sm">
+                    {cat}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <SheetFooter>
+          <Button variant="outline">Limpiar</Button>
+          <Button>Aplicar</Button>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
+  );
+}
+```

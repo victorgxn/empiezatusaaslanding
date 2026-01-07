@@ -1,0 +1,191 @@
+---
+title: Setup de PostgreSQL
+description: Configura PostgreSQL con Prisma en tu proyecto
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+# Setup de PostgreSQL
+
+Esta guía te ayudará a configurar PostgreSQL con Prisma desde cero.
+
+## Instalación
+
+<Steps>
+  <Step>
+    ### Instalar Prisma
+
+    ```bash
+    npm install @prisma/client
+    npm install -D prisma
+    ```
+  </Step>
+
+  <Step>
+    ### Inicializar Prisma
+
+    ```bash
+    npx prisma init
+    ```
+
+    Esto crea:
+    - `prisma/schema.prisma` - Tu esquema de base de datos
+    - `.env` - Variables de entorno (si no existe)
+  </Step>
+
+  <Step>
+    ### Configurar la conexión
+
+    <Tabs items={['Local (Docker)', 'Neon', 'Supabase DB']}>
+      <Tab value="Local (Docker)">
+        Inicia PostgreSQL con Docker:
+
+        ```bash
+        docker run --name postgres \
+          -e POSTGRES_PASSWORD=postgres \
+          -e POSTGRES_DB=empiezatusaas \
+          -p 5432:5432 \
+          -d postgres:15
+        ```
+
+        En `.env`:
+
+        ```bash
+        DATABASE_URL="postgresql://postgres:postgres@localhost:5432/empiezatusaas"
+        ```
+      </Tab>
+
+      <Tab value="Neon">
+        1. Crea una cuenta en [neon.tech](https://neon.tech)
+        2. Crea un nuevo proyecto
+        3. Copia la connection string
+
+        ```bash
+        DATABASE_URL="postgresql://user:password@ep-xxx.us-east-1.aws.neon.tech/neondb?sslmode=require"
+        ```
+      </Tab>
+
+      <Tab value="Supabase DB">
+        1. En tu proyecto Supabase, ve a **Settings > Database**
+        2. Copia la **Connection string** (URI)
+
+        ```bash
+        DATABASE_URL="postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres"
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+</Steps>
+
+## Schema básico
+
+```prisma title="prisma/schema.prisma"
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  posts Post[]
+  subscription Subscription?
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  content   String?
+  published Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId String
+}
+
+model Subscription {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  stripeCustomerId   String   @unique
+  stripePriceId      String?
+  stripeSubscriptionId String? @unique
+  status             String?
+  currentPeriodEnd   DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+```
+
+## Ejecutar migraciones
+
+```bash
+npx prisma migrate dev --name init
+```
+
+Esto:
+1. Crea las tablas en la base de datos
+2. Genera el cliente de Prisma
+3. Guarda la migración en `prisma/migrations/`
+
+## Crear cliente de Prisma
+
+```typescript title="lib/db.ts"
+import { PrismaClient } from "@prisma/client";
+
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined;
+};
+
+export const db =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: process.env.NODE_ENV === "development" ? ["query"] : [],
+  });
+
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = db;
+}
+```
+
+<Callout type="info">
+  Este patrón evita crear múltiples instancias de PrismaClient en desarrollo con hot reload.
+</Callout>
+
+## Verificar conexión
+
+```typescript title="app/api/health/route.ts"
+import { db } from "@/lib/db";
+
+export async function GET() {
+  try {
+    await db.$queryRaw`SELECT 1`;
+    return Response.json({ status: "ok" });
+  } catch (error) {
+    return Response.json({ status: "error" }, { status: 500 });
+  }
+}
+```
+
+## Prisma Studio
+
+Para visualizar y editar datos:
+
+```bash
+npx prisma studio
+```
+
+Abre [http://localhost:5555](http://localhost:5555) con una UI para tu base de datos.

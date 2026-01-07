@@ -1,0 +1,58 @@
+---
+title: Pagos con Stripe
+description: Implementa pagos y suscripciones con Stripe
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+# Pagos con Stripe
+
+Stripe es la plataforma de pagos más popular para SaaS. EmpiezaTuSaaS incluye integración completa.
+
+## Funcionalidades incluidas
+
+- **Checkout**: Páginas de pago hosted por Stripe
+- **Suscripciones**: Planes mensuales/anuales con trial
+- **Webhooks**: Sincronización automática de estados
+- **Customer Portal**: Gestión de suscripciones por el usuario
+- **Múltiples monedas**: EUR, USD, y más
+
+## Guías
+
+<Cards>
+  <Card
+    title="Setup de Stripe"
+    description="Configura Stripe y obtén tus API keys"
+    href="/docs/payments/stripe-setup"
+  />
+  <Card
+    title="Checkout"
+    description="Implementa páginas de pago para productos únicos"
+    href="/docs/payments/checkout"
+  />
+  <Card
+    title="Suscripciones"
+    description="Planes recurrentes con periodos de prueba"
+    href="/docs/payments/subscriptions"
+  />
+  <Card
+    title="Webhooks"
+    description="Sincroniza eventos de Stripe con tu base de datos"
+    href="/docs/payments/webhooks"
+  />
+  <Card
+    title="Customer Portal"
+    description="Permite a usuarios gestionar su suscripción"
+    href="/docs/payments/customer-portal"
+  />
+</Cards>
+
+## Modo de prueba
+
+Stripe ofrece un modo de prueba completo. Usa estas tarjetas:
+
+| Tarjeta | Resultado |
+|---------|-----------|
+| `4242 4242 4242 4242` | Pago exitoso |
+| `4000 0000 0000 9995` | Pago rechazado |
+| `4000 0025 0000 3155` | Requiere autenticación |

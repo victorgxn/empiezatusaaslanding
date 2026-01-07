@@ -1,0 +1,62 @@
+---
+title: Better Auth
+description: Autenticación completa con Better Auth y PostgreSQL
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+# Better Auth
+
+Better Auth es una librería de autenticación framework-agnostic para TypeScript que ofrece control total sobre tu sistema de auth.
+
+## Por qué Better Auth
+
+- **Framework-agnostic**: Funciona con Next.js, Remix, Astro y más
+- **Type-safe**: TypeScript first con inferencia completa
+- **Extensible**: Sistema de plugins para funcionalidades adicionales
+- **Sin vendor lock-in**: Tus datos en tu base de datos
+- **Seguro**: Sigue mejores prácticas de seguridad
+
+## Guías disponibles
+
+<Cards>
+  <Card
+    title="Setup inicial"
+    description="Configura Better Auth con PostgreSQL desde cero"
+    href="/docs/authentication/better-auth/setup"
+  />
+  <Card
+    title="Email y Password"
+    description="Implementa login con email y contraseña"
+    href="/docs/authentication/better-auth/email-password"
+  />
+  <Card
+    title="Social Login"
+    description="Agrega Google, GitHub y otros providers"
+    href="/docs/authentication/better-auth/social-login"
+  />
+  <Card
+    title="Magic Links"
+    description="Login sin contraseña por email"
+    href="/docs/authentication/better-auth/magic-link"
+  />
+  <Card
+    title="Two-Factor Auth"
+    description="Añade 2FA con TOTP o SMS"
+    href="/docs/authentication/better-auth/two-factor"
+  />
+</Cards>
+
+## Stack recomendado
+
+| Componente | Tecnología |
+|------------|------------|
+| Auth | Better Auth |
+| Database | PostgreSQL |
+| ORM | Prisma |
+| Hosting DB | Neon, Supabase DB, Railway |
+
+<Callout type="info">
+  Better Auth soporta múltiples bases de datos, pero recomendamos PostgreSQL por su robustez y compatibilidad.
+</Callout>

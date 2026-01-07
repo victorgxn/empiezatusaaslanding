@@ -1,0 +1,106 @@
+---
+title: Setup de Resend
+description: Configura Resend para enviar emails
+---
+
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Setup de Resend
+
+Configura Resend para enviar emails desde tu aplicación.
+
+## Instalación
+
+<Steps>
+  <Step>
+    ### Crear cuenta en Resend
+
+    1. Ve a [resend.com](https://resend.com) y crea una cuenta
+    2. Verifica tu email
+  </Step>
+
+  <Step>
+    ### Obtener API Key
+
+    1. Ve a **API Keys** en el dashboard
+    2. Click en **Create API Key**
+    3. Dale un nombre descriptivo
+    4. Copia la key
+
+    ```bash title=".env.local"
+    RESEND_API_KEY="re_..."
+    ```
+  </Step>
+
+  <Step>
+    ### Verificar dominio (opcional pero recomendado)
+
+    Para enviar desde tu propio dominio:
+    1. Ve a **Domains** en el dashboard
+    2. Agrega tu dominio
+    3. Configura los registros DNS (MX, SPF, DKIM)
+    4. Espera verificación
+
+    ```bash title=".env.local"
+    EMAIL_FROM="noreply@tudominio.com"
+    ```
+
+    <Callout type="info">
+      Sin dominio verificado, solo puedes enviar a tu email registrado usando `onboarding@resend.dev`.
+    </Callout>
+  </Step>
+
+  <Step>
+    ### Instalar SDK
+
+    ```bash
+    npm install resend @react-email/components
+    ```
+  </Step>
+
+  <Step>
+    ### Crear cliente
+
+    ```typescript title="lib/email.ts"
+    import { Resend } from "resend";
+
+    export const resend = new Resend(process.env.RESEND_API_KEY);
+    ```
+  </Step>
+</Steps>
+
+## Enviar primer email
+
+```typescript title="app/api/send-email/route.ts"
+import { resend } from "@/lib/email";
+
+export async function POST() {
+  const { data, error } = await resend.emails.send({
+    from: "EmpiezaTuSaaS <noreply@tudominio.com>",
+    to: "usuario@email.com",
+    subject: "¡Hola desde EmpiezaTuSaaS!",
+    html: "<p>Este es un email de prueba</p>",
+  });
+
+  if (error) {
+    return Response.json({ error }, { status: 500 });
+  }
+
+  return Response.json({ data });
+}
+```
+
+## Estructura de proyecto recomendada
+
+```
+emails/
+├── welcome.tsx          # Email de bienvenida
+├── verify-email.tsx     # Verificación de email
+├── reset-password.tsx   # Recuperar contraseña
+├── invoice.tsx          # Confirmación de pago
+└── components/
+    ├── header.tsx       # Componentes compartidos
+    ├── footer.tsx
+    └── button.tsx
+```

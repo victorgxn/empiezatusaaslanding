@@ -1,0 +1,253 @@
+---
+title: Social Login
+description: Agrega autenticación con Google, GitHub y otros providers
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+# Social Login
+
+Better Auth soporta múltiples providers de OAuth para permitir login social.
+
+## Providers disponibles
+
+- Google
+- GitHub
+- Apple
+- Discord
+- Twitter
+- Facebook
+- LinkedIn
+- Microsoft
+- Y muchos más...
+
+## Configuración
+
+<Tabs items={['Google', 'GitHub']}>
+  <Tab value="Google">
+    <Steps>
+      <Step>
+        ### Crear proyecto en Google Cloud
+
+        1. Ve a [Google Cloud Console](https://console.cloud.google.com/)
+        2. Crea un nuevo proyecto
+        3. Ve a **APIs & Services > Credentials**
+        4. Click en **Create Credentials > OAuth client ID**
+        5. Selecciona **Web application**
+      </Step>
+
+      <Step>
+        ### Configurar URIs
+
+        **Authorized JavaScript origins:**
+        ```
+        http://localhost:3000
+        https://tuapp.com
+        ```
+
+        **Authorized redirect URIs:**
+        ```
+        http://localhost:3000/api/auth/callback/google
+        https://tuapp.com/api/auth/callback/google
+        ```
+      </Step>
+
+      <Step>
+        ### Copiar credenciales
+
+        Copia el **Client ID** y **Client Secret** a tu `.env.local`:
+
+        ```bash
+        GOOGLE_CLIENT_ID="tu-client-id"
+        GOOGLE_CLIENT_SECRET="tu-client-secret"
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+
+  <Tab value="GitHub">
+    <Steps>
+      <Step>
+        ### Crear OAuth App
+
+        1. Ve a [GitHub Developer Settings](https://github.com/settings/developers)
+        2. Click en **New OAuth App**
+        3. Llena los campos:
+           - **Application name**: Tu App
+           - **Homepage URL**: `http://localhost:3000`
+           - **Authorization callback URL**: `http://localhost:3000/api/auth/callback/github`
+      </Step>
+
+      <Step>
+        ### Copiar credenciales
+
+        ```bash
+        GITHUB_CLIENT_ID="tu-client-id"
+        GITHUB_CLIENT_SECRET="tu-client-secret"
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## Configurar Better Auth
+
+```typescript title="lib/auth.ts"
+import { betterAuth } from "better-auth";
+
+export const auth = betterAuth({
+  // ... otras opciones
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    },
+    github: {
+      clientId: process.env.GITHUB_CLIENT_ID!,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+    },
+  },
+});
+```
+
+## Botones de Social Login
+
+```tsx title="components/auth/social-buttons.tsx"
+"use client";
+
+import { signIn } from "@/lib/auth-client";
+import { Button } from "@/components/ui/button";
+
+export function SocialButtons() {
+  return (
+    <div className="flex flex-col gap-2">
+      <Button
+        variant="outline"
+        onClick={() => signIn.social({ provider: "google" })}
+        className="w-full"
+      >
+        <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+          {/* Google icon SVG */}
+        </svg>
+        Continuar con Google
+      </Button>
+
+      <Button
+        variant="outline"
+        onClick={() => signIn.social({ provider: "github" })}
+        className="w-full"
+      >
+        <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+          {/* GitHub icon SVG */}
+        </svg>
+        Continuar con GitHub
+      </Button>
+    </div>
+  );
+}
+```
+
+## Componente completo de login
+
+```tsx title="components/auth/auth-form.tsx"
+"use client";
+
+import { useState } from "react";
+import { LoginForm } from "./login-form";
+import { RegisterForm } from "./register-form";
+import { SocialButtons } from "./social-buttons";
+
+export function AuthForm() {
+  const [mode, setMode] = useState<"login" | "register">("login");
+
+  return (
+    <div className="w-full max-w-md space-y-6">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold">
+          {mode === "login" ? "Iniciar sesión" : "Crear cuenta"}
+        </h1>
+      </div>
+
+      <SocialButtons />
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">
+            O continúa con email
+          </span>
+        </div>
+      </div>
+
+      {mode === "login" ? <LoginForm /> : <RegisterForm />}
+
+      <p className="text-center text-sm text-muted-foreground">
+        {mode === "login" ? (
+          <>
+            ¿No tienes cuenta?{" "}
+            <button
+              onClick={() => setMode("register")}
+              className="underline hover:text-foreground"
+            >
+              Regístrate
+            </button>
+          </>
+        ) : (
+          <>
+            ¿Ya tienes cuenta?{" "}
+            <button
+              onClick={() => setMode("login")}
+              className="underline hover:text-foreground"
+            >
+              Inicia sesión
+            </button>
+          </>
+        )}
+      </p>
+    </div>
+  );
+}
+```
+
+## Vincular cuentas existentes
+
+Si un usuario ya tiene cuenta con email y quiere vincular un provider social:
+
+```typescript
+import { authClient } from "@/lib/auth-client";
+
+const linkAccount = async () => {
+  await authClient.linkSocial({
+    provider: "google",
+    callbackURL: "/settings",
+  });
+};
+```
+
+<Callout type="info">
+  Better Auth automáticamente vincula cuentas si el email del provider coincide con una cuenta existente.
+</Callout>
+
+## Manejo de errores
+
+```tsx
+const handleSocialLogin = async (provider: "google" | "github") => {
+  const { error } = await signIn.social({
+    provider,
+    callbackURL: "/dashboard",
+  });
+
+  if (error) {
+    if (error.code === "ACCOUNT_NOT_LINKED") {
+      // El email ya existe con otro provider
+      toast.error("Este email ya está registrado con otro método");
+    } else {
+      toast.error("Error al iniciar sesión");
+    }
+  }
+};
+```

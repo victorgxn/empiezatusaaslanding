@@ -1,0 +1,141 @@
+---
+title: Instalación
+description: Guía paso a paso para instalar y configurar EmpiezaTuSaaS
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+# Instalación
+
+Esta guía te llevará paso a paso a través del proceso de instalación.
+
+## Clonar el repositorio
+
+```bash
+git clone https://github.com/tu-usuario/empiezatusaas.git
+cd empiezatusaas
+```
+
+## Instalar dependencias
+
+<Tabs items={['npm', 'pnpm', 'yarn']}>
+  <Tab value="npm">
+    ```bash
+    npm install
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```bash
+    pnpm install
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash
+    yarn install
+    ```
+  </Tab>
+</Tabs>
+
+## Configurar variables de entorno
+
+Copia el archivo de ejemplo:
+
+```bash
+cp .env.example .env.local
+```
+
+<Callout type="warn">
+  Nunca subas tu archivo `.env.local` a Git. Está incluido en `.gitignore` por defecto.
+</Callout>
+
+## Configurar la base de datos
+
+<Tabs items={['Better Auth + PostgreSQL', 'Supabase']}>
+  <Tab value="Better Auth + PostgreSQL">
+    ### 1. Crear base de datos PostgreSQL
+
+    Si no tienes PostgreSQL instalado, puedes usar Docker:
+
+    ```bash
+    docker run --name postgres -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres
+    ```
+
+    ### 2. Configurar la URL de conexión
+
+    En tu `.env.local`:
+
+    ```bash
+    DATABASE_URL="postgresql://postgres:postgres@localhost:5432/empiezatusaas"
+    ```
+
+    ### 3. Ejecutar migraciones
+
+    ```bash
+    npx prisma migrate dev
+    ```
+
+    ### 4. Generar cliente Prisma
+
+    ```bash
+    npx prisma generate
+    ```
+  </Tab>
+
+  <Tab value="Supabase">
+    ### 1. Crear proyecto en Supabase
+
+    1. Ve a [supabase.com](https://supabase.com) y crea una cuenta
+    2. Crea un nuevo proyecto
+    3. Espera a que se configure (puede tomar unos minutos)
+
+    ### 2. Obtener credenciales
+
+    En tu dashboard de Supabase, ve a **Settings > API** y copia:
+
+    - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
+    - **anon public** key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+    - **service_role** key → `SUPABASE_SERVICE_ROLE_KEY`
+
+    ### 3. Configurar variables
+
+    En tu `.env.local`:
+
+    ```bash
+    NEXT_PUBLIC_SUPABASE_URL="https://tu-proyecto.supabase.co"
+    NEXT_PUBLIC_SUPABASE_ANON_KEY="tu-anon-key"
+    SUPABASE_SERVICE_ROLE_KEY="tu-service-role-key"
+    ```
+  </Tab>
+</Tabs>
+
+## Verificar instalación
+
+Inicia el servidor de desarrollo:
+
+```bash
+npm run dev
+```
+
+Si todo está configurado correctamente, deberías ver la aplicación en [http://localhost:3000](http://localhost:3000).
+
+## Solución de problemas
+
+### Error de conexión a la base de datos
+
+- Verifica que PostgreSQL/Supabase esté corriendo
+- Comprueba que la URL de conexión sea correcta
+- Asegúrate de que el usuario tenga permisos
+
+### Error de Prisma
+
+```bash
+npx prisma generate
+npx prisma migrate reset
+```
+
+### Puerto 3000 en uso
+
+```bash
+npm run dev -- -p 3001
+```

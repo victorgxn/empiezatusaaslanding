@@ -1,9 +1,11 @@
 "use client";
 
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Star, Quote } from "lucide-react";
+import type { Testimonial, Stat } from "@/types";
 
-const testimonials = [
+const testimonials: Testimonial[] = [
   {
     name: "María García",
     role: "Indie Hacker",
@@ -54,7 +56,17 @@ const testimonials = [
   },
 ];
 
+const stats: Stat[] = [
+  { value: "20+", label: "Builders en el gremio" },
+  { value: "10k+", label: "Líneas de código" },
+  { value: "4.9/5", label: "Rating promedio" },
+  { value: "+15", label: "Funcionalidades listas" },
+];
+
 export function Testimonials() {
+  const memoizedTestimonials = useMemo(() => testimonials, []);
+  const memoizedStats = useMemo(() => stats, []);
+
   return (
     <section id="testimonials" className="py-24 relative overflow-hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -75,7 +87,7 @@ export function Testimonials() {
         </motion.div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {testimonials.map((testimonial, index) => (
+          {memoizedTestimonials.map((testimonial, index) => (
             <motion.div
               key={testimonial.name}
               initial={{ opacity: 0, y: 20 }}
@@ -132,12 +144,7 @@ export function Testimonials() {
           viewport={{ once: true }}
           className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-8"
         >
-          {[
-            { value: "20+", label: "Builders en el gremio" },
-            { value: "$2.5M+", label: "Revenue generado" },
-            { value: "4.9/5", label: "Rating promedio" },
-            { value: "50+", label: "Países" },
-          ].map((stat) => (
+          {memoizedStats.map((stat) => (
             <div key={stat.label} className="text-center">
               <p className="text-3xl sm:text-4xl font-bold text-gradient mb-2">
                 {stat.value}

@@ -1,0 +1,4 @@
+{
+  "title": "Better Auth",
+  "pages": ["index", "setup", "email-password", "social-login", "magic-link", "two-factor"]
+}

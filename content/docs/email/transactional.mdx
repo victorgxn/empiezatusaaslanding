@@ -1,0 +1,270 @@
+---
+title: Emails Transaccionales
+description: Envía emails de verificación, bienvenida y más
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Emails Transaccionales
+
+Los emails transaccionales son emails automáticos disparados por acciones del usuario.
+
+## Utilidad de envío
+
+```typescript title="lib/email.ts"
+import { Resend } from "resend";
+import { WelcomeEmail } from "@/emails/welcome";
+import { VerifyEmail } from "@/emails/verify-email";
+import { ResetPasswordEmail } from "@/emails/reset-password";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+const FROM_EMAIL = process.env.EMAIL_FROM || "onboarding@resend.dev";
+
+export async function sendWelcomeEmail(to: string, name: string) {
+  const { data, error } = await resend.emails.send({
+    from: `EmpiezaTuSaaS <${FROM_EMAIL}>`,
+    to,
+    subject: "¡Bienvenido a EmpiezaTuSaaS!",
+    react: WelcomeEmail({
+      name,
+      loginUrl: `${process.env.NEXT_PUBLIC_APP_URL}/login`,
+    }),
+  });
+
+  if (error) {
+    console.error("Error sending welcome email:", error);
+    throw error;
+  }
+
+  return data;
+}
+
+export async function sendVerificationEmail(to: string, token: string) {
+  const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${token}`;
+
+  const { data, error } = await resend.emails.send({
+    from: `EmpiezaTuSaaS <${FROM_EMAIL}>`,
+    to,
+    subject: "Verifica tu email",
+    react: VerifyEmail({ verificationUrl }),
+  });
+
+  if (error) {
+    console.error("Error sending verification email:", error);
+    throw error;
+  }
+
+  return data;
+}
+
+export async function sendPasswordResetEmail(to: string, token: string) {
+  const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${token}`;
+
+  const { data, error } = await resend.emails.send({
+    from: `EmpiezaTuSaaS <${FROM_EMAIL}>`,
+    to,
+    subject: "Recupera tu contraseña",
+    react: ResetPasswordEmail({ resetUrl }),
+  });
+
+  if (error) {
+    console.error("Error sending reset email:", error);
+    throw error;
+  }
+
+  return data;
+}
+```
+
+## Integración con Better Auth
+
+```typescript title="lib/auth.ts"
+import { betterAuth } from "better-auth";
+import { sendVerificationEmail, sendPasswordResetEmail } from "@/lib/email";
+
+export const auth = betterAuth({
+  // ... otras opciones
+  emailVerification: {
+    sendVerificationEmail: async ({ user, url, token }) => {
+      await sendVerificationEmail(user.email, token);
+    },
+  },
+  emailAndPassword: {
+    sendResetPassword: async ({ user, url, token }) => {
+      await sendPasswordResetEmail(user.email, token);
+    },
+  },
+});
+```
+
+## Email después de registro
+
+```typescript title="app/api/auth/register/route.ts"
+import { auth } from "@/lib/auth";
+import { sendWelcomeEmail } from "@/lib/email";
+
+// En tu flujo de registro
+const user = await auth.api.signUp({
+  body: { email, password, name },
+});
+
+// Enviar email de bienvenida
+await sendWelcomeEmail(user.email, user.name || "Usuario");
+```
+
+## Email de factura
+
+```tsx title="emails/invoice.tsx"
+import {
+  Body,
+  Container,
+  Head,
+  Heading,
+  Html,
+  Preview,
+  Section,
+  Text,
+  Row,
+  Column,
+} from "@react-email/components";
+
+interface InvoiceEmailProps {
+  customerName: string;
+  invoiceNumber: string;
+  amount: string;
+  date: string;
+  items: { name: string; price: string }[];
+}
+
+export function InvoiceEmail({
+  customerName,
+  invoiceNumber,
+  amount,
+  date,
+  items,
+}: InvoiceEmailProps) {
+  return (
+    <Html>
+      <Head />
+      <Preview>Factura #{invoiceNumber}</Preview>
+      <Body style={main}>
+        <Container style={container}>
+          <Heading style={h1}>Factura #{invoiceNumber}</Heading>
+
+          <Text style={text}>Hola {customerName},</Text>
+
+          <Text style={text}>
+            Gracias por tu pago. Aquí tienes los detalles:
+          </Text>
+
+          <Section style={table}>
+            {items.map((item, i) => (
+              <Row key={i} style={tableRow}>
+                <Column>{item.name}</Column>
+                <Column style={alignRight}>{item.price}</Column>
+              </Row>
+            ))}
+            <Row style={totalRow}>
+              <Column>
+                <strong>Total</strong>
+              </Column>
+              <Column style={alignRight}>
+                <strong>{amount}</strong>
+              </Column>
+            </Row>
+          </Section>
+
+          <Text style={footer}>
+            Fecha: {date}
+            <br />
+            Factura: #{invoiceNumber}
+          </Text>
+        </Container>
+      </Body>
+    </Html>
+  );
+}
+
+const main = {
+  backgroundColor: "#f6f9fc",
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+};
+
+const container = {
+  backgroundColor: "#ffffff",
+  margin: "0 auto",
+  padding: "40px 20px",
+  borderRadius: "8px",
+  maxWidth: "560px",
+};
+
+const h1 = {
+  color: "#1f2937",
+  fontSize: "24px",
+  fontWeight: "600",
+};
+
+const text = {
+  color: "#4b5563",
+  fontSize: "16px",
+  lineHeight: "1.5",
+};
+
+const table = {
+  margin: "24px 0",
+  border: "1px solid #e5e7eb",
+  borderRadius: "8px",
+  padding: "16px",
+};
+
+const tableRow = {
+  borderBottom: "1px solid #e5e7eb",
+  padding: "8px 0",
+};
+
+const totalRow = {
+  padding: "16px 0 0 0",
+};
+
+const alignRight = {
+  textAlign: "right" as const,
+};
+
+const footer = {
+  color: "#9ca3af",
+  fontSize: "12px",
+  marginTop: "32px",
+};
+
+export default InvoiceEmail;
+```
+
+## Enviar después de pago
+
+```typescript title="app/api/stripe/webhooks/route.ts"
+import { sendInvoiceEmail } from "@/lib/email";
+
+// En el handler de webhooks
+case "invoice.payment_succeeded": {
+  const invoice = event.data.object as Stripe.Invoice;
+
+  if (invoice.customer_email) {
+    await sendInvoiceEmail(invoice.customer_email, {
+      customerName: invoice.customer_name || "Cliente",
+      invoiceNumber: invoice.number || invoice.id,
+      amount: `$${(invoice.amount_paid / 100).toFixed(2)}`,
+      date: new Date(invoice.created * 1000).toLocaleDateString(),
+      items: invoice.lines.data.map((line) => ({
+        name: line.description || "Suscripción",
+        price: `$${(line.amount / 100).toFixed(2)}`,
+      })),
+    });
+  }
+  break;
+}
+```
+
+<Callout type="info">
+  Resend tiene un límite de 3,000 emails/mes en el plan gratuito. Para más volumen, consulta sus planes de pago.
+</Callout>

@@ -1,0 +1,48 @@
+---
+title: PostgreSQL + Prisma
+description: Base de datos PostgreSQL con Prisma ORM
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+# PostgreSQL + Prisma
+
+PostgreSQL es la base de datos relacional más avanzada del mundo, y Prisma es el ORM moderno que la hace increíblemente fácil de usar en TypeScript.
+
+## Por qué esta combinación
+
+- **Type-safe**: Prisma genera tipos TypeScript automáticamente
+- **Migraciones**: Control de versiones para tu esquema
+- **Performance**: Queries optimizadas
+- **Flexibilidad**: Hostea donde quieras
+- **Ecosistema**: Gran comunidad y documentación
+
+## Guías
+
+<Cards>
+  <Card
+    title="Setup inicial"
+    description="Configura PostgreSQL y Prisma en tu proyecto"
+    href="/docs/database/postgresql/setup"
+  />
+  <Card
+    title="Prisma ORM"
+    description="Aprende a definir modelos y hacer queries"
+    href="/docs/database/postgresql/prisma"
+  />
+  <Card
+    title="Migraciones"
+    description="Gestiona cambios en tu esquema de base de datos"
+    href="/docs/database/postgresql/migrations"
+  />
+</Cards>
+
+## Hosting recomendado
+
+| Proveedor | Tier gratuito | Mejor para |
+|-----------|---------------|------------|
+| [Neon](https://neon.tech) | Sí (generoso) | Serverless |
+| [Supabase DB](https://supabase.com) | Sí | Hobby projects |
+| [Railway](https://railway.app) | Trial | Side projects |
+| [PlanetScale](https://planetscale.com) | Sí | Scale |
+| [Vercel Postgres](https://vercel.com/postgres) | Sí | Vercel apps |

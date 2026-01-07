@@ -1,0 +1,168 @@
+---
+title: Metadata
+description: Configura títulos, descripciones y OpenGraph
+---
+
+# Metadata
+
+Next.js App Router tiene soporte nativo para metadata SEO.
+
+## Metadata global
+
+```tsx title="app/layout.tsx"
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: {
+    default: "EmpiezaTuSaaS - Tu boilerplate para SaaS",
+    template: "%s | EmpiezaTuSaaS",
+  },
+  description: "Lanza tu SaaS en tiempo récord con Next.js, Stripe y más.",
+  keywords: ["saas", "boilerplate", "nextjs", "stripe", "typescript"],
+  authors: [{ name: "Tu Nombre" }],
+  creator: "Tu Nombre",
+  metadataBase: new URL("https://tuapp.com"),
+  openGraph: {
+    type: "website",
+    locale: "es_ES",
+    url: "https://tuapp.com",
+    siteName: "EmpiezaTuSaaS",
+    title: "EmpiezaTuSaaS - Tu boilerplate para SaaS",
+    description: "Lanza tu SaaS en tiempo récord",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "EmpiezaTuSaaS",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "EmpiezaTuSaaS",
+    description: "Lanza tu SaaS en tiempo récord",
+    images: ["/og-image.png"],
+    creator: "@tuhandle",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+};
+```
+
+## Metadata por página
+
+```tsx title="app/blog/[slug]/page.tsx"
+import type { Metadata } from "next";
+
+interface Props {
+  params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await getPost(slug);
+
+  return {
+    title: post.title,
+    description: post.excerpt,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      type: "article",
+      publishedTime: post.publishedAt,
+      authors: [post.author.name],
+      images: [
+        {
+          url: post.image,
+          width: 1200,
+          height: 630,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
+      images: [post.image],
+    },
+  };
+}
+```
+
+## Canonical URL
+
+```tsx
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "https://tuapp.com/page",
+  },
+};
+```
+
+## Verificación de sitio
+
+```tsx title="app/layout.tsx"
+export const metadata: Metadata = {
+  verification: {
+    google: "tu-codigo-de-google",
+    yandex: "tu-codigo-de-yandex",
+  },
+};
+```
+
+## OpenGraph Image dinámico
+
+```tsx title="app/og/route.tsx"
+import { ImageResponse } from "next/og";
+
+export const runtime = "edge";
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const title = searchParams.get("title") || "EmpiezaTuSaaS";
+
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          height: "100%",
+          width: "100%",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#000",
+          color: "#fff",
+        }}
+      >
+        <div style={{ fontSize: 60, fontWeight: "bold" }}>{title}</div>
+        <div style={{ fontSize: 30, marginTop: 20 }}>EmpiezaTuSaaS</div>
+      </div>
+    ),
+    {
+      width: 1200,
+      height: 630,
+    }
+  );
+}
+```
+
+Usa en metadata:
+
+```tsx
+export const metadata: Metadata = {
+  openGraph: {
+    images: ["/og?title=Mi+Página"],
+  },
+};
+```

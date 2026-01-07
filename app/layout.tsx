@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Montserrat, JetBrains_Mono } from "next/font/google";
+import { RootProvider } from "fumadocs-ui/provider/next";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -50,11 +51,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className="dark">
+    <html lang="es" className="dark" suppressHydrationWarning>
       <body
         className={`${montserrat.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
-        {children}
+        <RootProvider>{children}</RootProvider>
       </body>
     </html>
   );

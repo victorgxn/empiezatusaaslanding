@@ -163,7 +163,9 @@ export function Features() {
           alt="Dungeon room"
           fill
           className="object-cover object-center"
-          quality={85}
+          quality={75}
+          loading="lazy"
+          placeholder="empty"
         />
         {/* Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/75 to-background/90" />

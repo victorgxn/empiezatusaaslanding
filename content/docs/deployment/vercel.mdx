@@ -1,0 +1,124 @@
+---
+title: Deploy en Vercel
+description: Despliega tu aplicación en Vercel
+---
+
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Deploy en Vercel
+
+Vercel es la plataforma recomendada para Next.js.
+
+## Deploy
+
+<Steps>
+  <Step>
+    ### Conectar repositorio
+
+    1. Ve a [vercel.com](https://vercel.com) y crea una cuenta
+    2. Click en **New Project**
+    3. Importa tu repositorio de GitHub/GitLab
+  </Step>
+
+  <Step>
+    ### Configurar variables de entorno
+
+    En **Settings > Environment Variables**, agrega:
+
+    ```
+    NEXT_PUBLIC_APP_URL=https://tuapp.vercel.app
+    DATABASE_URL=postgresql://...
+    STRIPE_SECRET_KEY=sk_live_...
+    STRIPE_WEBHOOK_SECRET=whsec_...
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_...
+    RESEND_API_KEY=re_...
+    EMAIL_FROM=noreply@tudominio.com
+    ```
+
+    Para Better Auth, también:
+    ```
+    BETTER_AUTH_SECRET=...
+    BETTER_AUTH_URL=https://tuapp.vercel.app
+    ```
+
+    Para Supabase:
+    ```
+    NEXT_PUBLIC_SUPABASE_URL=...
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+    ```
+  </Step>
+
+  <Step>
+    ### Deploy
+
+    Click en **Deploy** y espera a que termine.
+  </Step>
+
+  <Step>
+    ### Configurar dominio personalizado
+
+    1. Ve a **Settings > Domains**
+    2. Agrega tu dominio
+    3. Configura los DNS según las instrucciones
+  </Step>
+</Steps>
+
+## Configuración adicional
+
+### Build command
+
+Por defecto Vercel usa:
+
+```
+npm run build
+```
+
+### Output directory
+
+Next.js maneja esto automáticamente.
+
+### Node.js version
+
+En **Settings > General**, selecciona Node.js 18.x o superior.
+
+## Webhooks de Stripe
+
+Actualiza el webhook en Stripe Dashboard:
+
+1. Ve a **Developers > Webhooks**
+2. Edita tu endpoint o crea uno nuevo
+3. URL: `https://tuapp.com/api/stripe/webhooks`
+4. Copia el nuevo signing secret a las variables de entorno
+
+## OAuth callbacks
+
+Actualiza los callbacks en tus providers:
+
+### Google
+```
+https://tuapp.com/api/auth/callback/google
+```
+
+### GitHub
+```
+https://tuapp.com/api/auth/callback/github
+```
+
+## Preview deployments
+
+Vercel crea un deploy preview para cada PR. Las variables de entorno de preview pueden ser diferentes de producción.
+
+<Callout type="warn">
+  No uses claves de producción de Stripe en previews. Configura variables específicas para el entorno de preview.
+</Callout>
+
+## Monitoreo
+
+Vercel incluye:
+
+- **Analytics**: Métricas de rendimiento
+- **Logs**: Logs en tiempo real
+- **Speed Insights**: Web Vitals
+
+Actívalos en tu dashboard de Vercel.

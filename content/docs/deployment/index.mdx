@@ -1,0 +1,35 @@
+---
+title: Deployment
+description: Despliega tu aplicación en producción
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+# Deployment
+
+Guías para desplegar tu aplicación en producción.
+
+## Guías
+
+<Cards>
+  <Card
+    title="Vercel"
+    description="Deploy en Vercel (recomendado)"
+    href="/docs/deployment/vercel"
+  />
+  <Card
+    title="Variables de Entorno"
+    description="Configura variables en producción"
+    href="/docs/deployment/environment-variables"
+  />
+</Cards>
+
+## Checklist pre-deploy
+
+- [ ] Variables de entorno configuradas
+- [ ] Base de datos en producción lista
+- [ ] Webhooks de Stripe apuntando a producción
+- [ ] Dominio verificado en Resend
+- [ ] OAuth callbacks actualizados
+- [ ] Tests pasando
+- [ ] Build sin errores

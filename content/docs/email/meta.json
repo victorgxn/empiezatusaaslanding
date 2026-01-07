@@ -1,0 +1,4 @@
+{
+  "title": "Email",
+  "pages": ["index", "resend-setup", "templates", "transactional"]
+}

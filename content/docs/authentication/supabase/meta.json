@@ -1,0 +1,4 @@
+{
+  "title": "Supabase Auth",
+  "pages": ["index", "setup", "email-password", "social-login", "row-level-security"]
+}

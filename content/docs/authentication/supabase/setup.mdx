@@ -1,0 +1,227 @@
+---
+title: Setup de Supabase Auth
+description: Configura Supabase Auth en tu proyecto Next.js
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+# Setup de Supabase Auth
+
+Esta guía te llevará a través de la configuración de Supabase Auth con Next.js App Router.
+
+## Instalación
+
+<Steps>
+  <Step>
+    ### Crear proyecto en Supabase
+
+    1. Ve a [supabase.com](https://supabase.com) y crea una cuenta
+    2. Click en **New Project**
+    3. Elige un nombre y contraseña para la base de datos
+    4. Selecciona la región más cercana
+    5. Espera a que se configure (1-2 minutos)
+  </Step>
+
+  <Step>
+    ### Instalar dependencias
+
+    ```bash
+    npm install @supabase/supabase-js @supabase/ssr
+    ```
+  </Step>
+
+  <Step>
+    ### Obtener credenciales
+
+    En tu dashboard de Supabase:
+    1. Ve a **Settings > API**
+    2. Copia **Project URL** y **anon public** key
+
+    ```bash title=".env.local"
+    NEXT_PUBLIC_SUPABASE_URL="https://xxx.supabase.co"
+    NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJ..."
+    ```
+  </Step>
+
+  <Step>
+    ### Crear cliente de Supabase
+
+    ```typescript title="lib/supabase/client.ts"
+    import { createBrowserClient } from "@supabase/ssr";
+
+    export function createClient() {
+      return createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+    }
+    ```
+
+    ```typescript title="lib/supabase/server.ts"
+    import { createServerClient } from "@supabase/ssr";
+    import { cookies } from "next/headers";
+
+    export async function createClient() {
+      const cookieStore = await cookies();
+
+      return createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            getAll() {
+              return cookieStore.getAll();
+            },
+            setAll(cookiesToSet) {
+              try {
+                cookiesToSet.forEach(({ name, value, options }) =>
+                  cookieStore.set(name, value, options)
+                );
+              } catch {
+                // Server Component
+              }
+            },
+          },
+        }
+      );
+    }
+    ```
+  </Step>
+
+  <Step>
+    ### Crear middleware
+
+    ```typescript title="middleware.ts"
+    import { createServerClient } from "@supabase/ssr";
+    import { NextResponse, type NextRequest } from "next/server";
+
+    export async function middleware(request: NextRequest) {
+      let supabaseResponse = NextResponse.next({
+        request,
+      });
+
+      const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            getAll() {
+              return request.cookies.getAll();
+            },
+            setAll(cookiesToSet) {
+              cookiesToSet.forEach(({ name, value }) =>
+                request.cookies.set(name, value)
+              );
+              supabaseResponse = NextResponse.next({
+                request,
+              });
+              cookiesToSet.forEach(({ name, value, options }) =>
+                supabaseResponse.cookies.set(name, value, options)
+              );
+            },
+          },
+        }
+      );
+
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      // Proteger rutas del dashboard
+      if (
+        !user &&
+        request.nextUrl.pathname.startsWith("/dashboard")
+      ) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/login";
+        return NextResponse.redirect(url);
+      }
+
+      return supabaseResponse;
+    }
+
+    export const config = {
+      matcher: [
+        "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+      ],
+    };
+    ```
+  </Step>
+</Steps>
+
+## Verificar instalación
+
+### En un Server Component
+
+```tsx title="app/dashboard/page.tsx"
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
+
+export default async function DashboardPage() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login");
+  }
+
+  return (
+    <div>
+      <h1>Dashboard</h1>
+      <p>Bienvenido, {user.email}</p>
+    </div>
+  );
+}
+```
+
+### En un Client Component
+
+```tsx title="components/user-info.tsx"
+"use client";
+
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
+
+export function UserInfo() {
+  const [user, setUser] = useState<User | null>(null);
+  const supabase = createClient();
+
+  useEffect(() => {
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
+    };
+
+    getUser();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (!user) return null;
+
+  return <p>Logged in as: {user.email}</p>;
+}
+```
+
+<Callout type="info">
+  El middleware refresca automáticamente los tokens de sesión, manteniendo al usuario logueado.
+</Callout>
+
+## Siguientes pasos
+
+- [Implementar Email y Password](/docs/authentication/supabase/email-password)
+- [Agregar Social Login](/docs/authentication/supabase/social-login)
+- [Configurar Row Level Security](/docs/authentication/supabase/row-level-security)

@@ -1,0 +1,280 @@
+---
+title: Templates con React Email
+description: Crea templates de email hermosos con componentes React
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Templates con React Email
+
+React Email te permite crear templates de email usando JSX, lo que hace el desarrollo mucho más intuitivo.
+
+## Componentes disponibles
+
+React Email incluye componentes pre-estilizados:
+
+```tsx
+import {
+  Html,
+  Head,
+  Preview,
+  Body,
+  Container,
+  Section,
+  Text,
+  Link,
+  Button,
+  Img,
+  Hr,
+  Heading,
+} from "@react-email/components";
+```
+
+## Template de bienvenida
+
+```tsx title="emails/welcome.tsx"
+import {
+  Body,
+  Button,
+  Container,
+  Head,
+  Heading,
+  Hr,
+  Html,
+  Img,
+  Link,
+  Preview,
+  Section,
+  Text,
+} from "@react-email/components";
+
+interface WelcomeEmailProps {
+  name: string;
+  loginUrl: string;
+}
+
+export function WelcomeEmail({ name, loginUrl }: WelcomeEmailProps) {
+  return (
+    <Html>
+      <Head />
+      <Preview>Bienvenido a EmpiezaTuSaaS</Preview>
+      <Body style={main}>
+        <Container style={container}>
+          <Img
+            src="https://tuapp.com/logo.png"
+            width="48"
+            height="48"
+            alt="Logo"
+          />
+
+          <Heading style={h1}>¡Bienvenido, {name}!</Heading>
+
+          <Text style={text}>
+            Gracias por unirte a EmpiezaTuSaaS. Estamos emocionados de tenerte
+            con nosotros.
+          </Text>
+
+          <Section style={buttonContainer}>
+            <Button style={button} href={loginUrl}>
+              Ir al dashboard
+            </Button>
+          </Section>
+
+          <Text style={text}>
+            Si tienes alguna pregunta, no dudes en responder a este email.
+          </Text>
+
+          <Hr style={hr} />
+
+          <Text style={footer}>
+            © 2024 EmpiezaTuSaaS. Todos los derechos reservados.
+          </Text>
+        </Container>
+      </Body>
+    </Html>
+  );
+}
+
+// Estilos
+const main = {
+  backgroundColor: "#f6f9fc",
+  fontFamily:
+    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+};
+
+const container = {
+  backgroundColor: "#ffffff",
+  margin: "0 auto",
+  padding: "40px 20px",
+  borderRadius: "8px",
+  maxWidth: "560px",
+};
+
+const h1 = {
+  color: "#1f2937",
+  fontSize: "24px",
+  fontWeight: "600",
+  lineHeight: "1.25",
+  margin: "16px 0",
+};
+
+const text = {
+  color: "#4b5563",
+  fontSize: "16px",
+  lineHeight: "1.5",
+  margin: "16px 0",
+};
+
+const buttonContainer = {
+  margin: "24px 0",
+};
+
+const button = {
+  backgroundColor: "#000000",
+  borderRadius: "8px",
+  color: "#ffffff",
+  fontSize: "16px",
+  fontWeight: "600",
+  padding: "12px 24px",
+  textDecoration: "none",
+};
+
+const hr = {
+  borderColor: "#e5e7eb",
+  margin: "32px 0",
+};
+
+const footer = {
+  color: "#9ca3af",
+  fontSize: "12px",
+};
+
+export default WelcomeEmail;
+```
+
+## Template de verificación
+
+```tsx title="emails/verify-email.tsx"
+import {
+  Body,
+  Button,
+  Container,
+  Head,
+  Heading,
+  Html,
+  Preview,
+  Section,
+  Text,
+} from "@react-email/components";
+
+interface VerifyEmailProps {
+  verificationUrl: string;
+}
+
+export function VerifyEmail({ verificationUrl }: VerifyEmailProps) {
+  return (
+    <Html>
+      <Head />
+      <Preview>Verifica tu email</Preview>
+      <Body style={main}>
+        <Container style={container}>
+          <Heading style={h1}>Verifica tu email</Heading>
+
+          <Text style={text}>
+            Haz click en el botón de abajo para verificar tu dirección de email.
+          </Text>
+
+          <Section style={buttonContainer}>
+            <Button style={button} href={verificationUrl}>
+              Verificar email
+            </Button>
+          </Section>
+
+          <Text style={text}>
+            Si no creaste una cuenta, puedes ignorar este email.
+          </Text>
+
+          <Text style={footer}>
+            Este enlace expira en 24 horas.
+          </Text>
+        </Container>
+      </Body>
+    </Html>
+  );
+}
+
+const main = {
+  backgroundColor: "#f6f9fc",
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+};
+
+const container = {
+  backgroundColor: "#ffffff",
+  margin: "0 auto",
+  padding: "40px 20px",
+  borderRadius: "8px",
+  maxWidth: "560px",
+};
+
+const h1 = {
+  color: "#1f2937",
+  fontSize: "24px",
+  fontWeight: "600",
+  margin: "16px 0",
+};
+
+const text = {
+  color: "#4b5563",
+  fontSize: "16px",
+  lineHeight: "1.5",
+  margin: "16px 0",
+};
+
+const buttonContainer = {
+  margin: "24px 0",
+};
+
+const button = {
+  backgroundColor: "#000000",
+  borderRadius: "8px",
+  color: "#ffffff",
+  fontSize: "16px",
+  fontWeight: "600",
+  padding: "12px 24px",
+  textDecoration: "none",
+};
+
+const footer = {
+  color: "#9ca3af",
+  fontSize: "12px",
+  marginTop: "32px",
+};
+
+export default VerifyEmail;
+```
+
+## Preview de emails
+
+Para previsualizar emails durante el desarrollo:
+
+```bash
+npm install -D email-dev
+```
+
+```json title="package.json"
+{
+  "scripts": {
+    "email": "email dev --dir emails"
+  }
+}
+```
+
+```bash
+npm run email
+```
+
+Abre [http://localhost:3001](http://localhost:3001) para ver tus templates.
+
+<Callout type="info">
+  React Email renderiza a HTML compatible con todos los clientes de email, incluyendo Outlook y Gmail.
+</Callout>

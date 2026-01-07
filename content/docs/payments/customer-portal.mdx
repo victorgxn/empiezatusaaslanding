@@ -1,0 +1,189 @@
+---
+title: Customer Portal
+description: Permite a usuarios gestionar su suscripción
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Customer Portal
+
+El Customer Portal de Stripe permite a los usuarios gestionar su suscripción sin que tengas que construir la UI.
+
+## Configurar el portal
+
+En el dashboard de Stripe:
+1. Ve a **Settings > Billing > Customer portal**
+2. Configura:
+   - Logo y colores de tu marca
+   - Permitir cancelación
+   - Permitir cambio de plan
+   - Permitir actualizar método de pago
+
+## API para crear sesión del portal
+
+```typescript title="app/api/stripe/portal/route.ts"
+import { stripe } from "@/lib/stripe";
+import { db } from "@/lib/db";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+
+export async function POST() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user) {
+    return Response.json({ error: "No autenticado" }, { status: 401 });
+  }
+
+  // Obtener customer ID
+  const subscription = await db.subscription.findUnique({
+    where: { userId: session.user.id },
+  });
+
+  if (!subscription?.stripeCustomerId) {
+    return Response.json(
+      { error: "No hay suscripción activa" },
+      { status: 400 }
+    );
+  }
+
+  // Crear sesión del portal
+  const portalSession = await stripe.billingPortal.sessions.create({
+    customer: subscription.stripeCustomerId,
+    return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings`,
+  });
+
+  return Response.json({ url: portalSession.url });
+}
+```
+
+## Botón para abrir el portal
+
+```tsx title="components/manage-subscription-button.tsx"
+"use client";
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+
+export function ManageSubscriptionButton() {
+  const [loading, setLoading] = useState(false);
+
+  const handleClick = async () => {
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/stripe/portal", {
+        method: "POST",
+      });
+
+      const data = await response.json();
+
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Error al abrir el portal");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Button onClick={handleClick} disabled={loading} variant="outline">
+      {loading ? "Cargando..." : "Gestionar suscripción"}
+    </Button>
+  );
+}
+```
+
+## Página de configuración
+
+```tsx title="app/dashboard/settings/page.tsx"
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { getUserSubscription } from "@/lib/subscription";
+import { ManageSubscriptionButton } from "@/components/manage-subscription-button";
+import { PLANS } from "@/config/stripe";
+
+export default async function SettingsPage() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user) {
+    redirect("/login");
+  }
+
+  const subscription = await getUserSubscription(session.user.id);
+
+  // Encontrar el plan actual
+  const currentPlan = Object.entries(PLANS).find(
+    ([, plan]) =>
+      plan.stripePriceId.monthly === subscription.plan ||
+      plan.stripePriceId.yearly === subscription.plan
+  );
+
+  return (
+    <div className="max-w-2xl space-y-8">
+      <h1 className="text-2xl font-bold">Configuración</h1>
+
+      <section className="border rounded-lg p-6 space-y-4">
+        <h2 className="font-semibold">Suscripción</h2>
+
+        {subscription.isActive ? (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="font-medium">
+                  Plan {currentPlan?.[1].name || "Desconocido"}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {subscription.cancelAtPeriodEnd
+                    ? "Se cancelará al final del periodo"
+                    : `Renueva el ${new Date(
+                        subscription.currentPeriodEnd!
+                      ).toLocaleDateString()}`}
+                </p>
+              </div>
+              <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">
+                {subscription.status}
+              </span>
+            </div>
+
+            <ManageSubscriptionButton />
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <p className="text-muted-foreground">
+              No tienes una suscripción activa
+            </p>
+            <Button asChild>
+              <a href="/pricing">Ver planes</a>
+            </Button>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+```
+
+## Funcionalidades del portal
+
+El Customer Portal permite a los usuarios:
+
+- Ver historial de facturación
+- Descargar facturas
+- Actualizar método de pago
+- Cambiar de plan (si lo configuras)
+- Cancelar suscripción
+- Reactivar suscripción cancelada
+
+<Callout type="info">
+  El Customer Portal está completamente hosted por Stripe, lo que significa que no tienes que manejar información sensible de tarjetas.
+</Callout>

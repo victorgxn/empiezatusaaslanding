@@ -1,28 +1,41 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Sword } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { NavLink } from "@/types";
 
-const navLinks = [
+const navLinks: NavLink[] = [
   { href: "#features", label: "Features" },
   { href: "#pricing", label: "Pricing" },
   { href: "#testimonials", label: "Testimonials" },
   { href: "#faq", label: "FAQ" },
+  { href: "/docs", label: "Docs" },
 ];
 
 export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const lastScrollY = useRef(0);
+  const ticking = useRef(false);
+
+  const updateScrollState = useCallback(() => {
+    setIsScrolled(lastScrollY.current > 20);
+    ticking.current = false;
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      lastScrollY.current = window.scrollY;
+      if (!ticking.current) {
+        requestAnimationFrame(updateScrollState);
+        ticking.current = true;
+      }
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [updateScrollState]);
 
   return (
     <header

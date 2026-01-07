@@ -1,0 +1,61 @@
+---
+title: Base de Datos
+description: Elige entre PostgreSQL con Prisma o Supabase para tu base de datos
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Base de Datos
+
+EmpiezaTuSaaS soporta dos opciones de base de datos para adaptarse a diferentes necesidades.
+
+## Comparativa
+
+| Característica | PostgreSQL + Prisma | Supabase |
+|----------------|---------------------|----------|
+| **Setup** | Manual | Automático |
+| **Control** | Total | Limitado |
+| **Migraciones** | Prisma Migrate | Dashboard/SQL |
+| **ORM** | Prisma (type-safe) | Cliente JS |
+| **Hosting** | Cualquiera | Supabase |
+| **Costo** | Variable | Gratis hasta límites |
+| **Realtime** | Requiere setup | Incluido |
+| **Edge Functions** | No incluido | Incluido |
+
+## Elige tu opción
+
+<Cards>
+  <Card
+    title="PostgreSQL + Prisma"
+    description="Control total con ORM type-safe. Ideal para proyectos que necesitan máxima flexibilidad."
+    href="/docs/database/postgresql"
+  />
+  <Card
+    title="Supabase"
+    description="Base de datos PostgreSQL gestionada con API REST automática y features adicionales."
+    href="/docs/database/supabase"
+  />
+</Cards>
+
+## Cuándo elegir cada opción
+
+### Elige PostgreSQL + Prisma si:
+
+- Quieres control total sobre tu base de datos
+- Necesitas migraciones versionadas
+- Prefieres un ORM con tipos completos
+- Quieres hostear en cualquier proveedor
+- Tu equipo tiene experiencia con SQL/ORMs
+
+### Elige Supabase si:
+
+- Quieres setup instantáneo
+- Necesitas realtime out of the box
+- Prefieres una UI para gestionar datos
+- Quieres edge functions incluidas
+- Estás construyendo un MVP rápido
+
+<Callout type="info">
+  Ambas opciones usan PostgreSQL como base de datos. La diferencia está en cómo interactúas con ella.
+</Callout>

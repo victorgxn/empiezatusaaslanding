@@ -1,0 +1,203 @@
+---
+title: Setup de Better Auth
+description: Configura Better Auth con PostgreSQL paso a paso
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+# Setup de Better Auth
+
+Esta guía te llevará a través de la configuración completa de Better Auth con PostgreSQL.
+
+## Instalación
+
+<Steps>
+  <Step>
+    ### Instalar dependencias
+
+    ```bash
+    npm install better-auth @prisma/client
+    npm install -D prisma
+    ```
+  </Step>
+
+  <Step>
+    ### Configurar Prisma
+
+    Inicializa Prisma:
+
+    ```bash
+    npx prisma init
+    ```
+
+    Actualiza `prisma/schema.prisma`:
+
+    ```prisma title="prisma/schema.prisma"
+    generator client {
+      provider = "prisma-client-js"
+    }
+
+    datasource db {
+      provider = "postgresql"
+      url      = env("DATABASE_URL")
+    }
+
+    model User {
+      id            String    @id @default(cuid())
+      email         String    @unique
+      emailVerified DateTime?
+      name          String?
+      image         String?
+      createdAt     DateTime  @default(now())
+      updatedAt     DateTime  @updatedAt
+
+      sessions Session[]
+      accounts Account[]
+    }
+
+    model Session {
+      id        String   @id @default(cuid())
+      userId    String
+      expiresAt DateTime
+      token     String   @unique
+      createdAt DateTime @default(now())
+      updatedAt DateTime @updatedAt
+      ipAddress String?
+      userAgent String?
+
+      user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    }
+
+    model Account {
+      id                String  @id @default(cuid())
+      userId            String
+      accountId         String
+      providerId        String
+      accessToken       String?
+      refreshToken      String?
+      accessTokenExpiresAt DateTime?
+      refreshTokenExpiresAt DateTime?
+      scope             String?
+      idToken           String?
+      password          String?
+      createdAt         DateTime @default(now())
+      updatedAt         DateTime @updatedAt
+
+      user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+      @@unique([providerId, accountId])
+    }
+
+    model Verification {
+      id         String   @id @default(cuid())
+      identifier String
+      value      String
+      expiresAt  DateTime
+      createdAt  DateTime @default(now())
+      updatedAt  DateTime @updatedAt
+
+      @@unique([identifier, value])
+    }
+    ```
+  </Step>
+
+  <Step>
+    ### Ejecutar migraciones
+
+    ```bash
+    npx prisma migrate dev --name init
+    npx prisma generate
+    ```
+  </Step>
+
+  <Step>
+    ### Configurar Better Auth
+
+    Crea `lib/auth.ts`:
+
+    ```typescript title="lib/auth.ts"
+    import { betterAuth } from "better-auth";
+    import { prismaAdapter } from "better-auth/adapters/prisma";
+    import { PrismaClient } from "@prisma/client";
+
+    const prisma = new PrismaClient();
+
+    export const auth = betterAuth({
+      database: prismaAdapter(prisma, {
+        provider: "postgresql",
+      }),
+      emailAndPassword: {
+        enabled: true,
+        requireEmailVerification: true,
+      },
+      session: {
+        expiresIn: 60 * 60 * 24 * 7, // 7 días
+        updateAge: 60 * 60 * 24, // Actualizar cada día
+      },
+    });
+    ```
+  </Step>
+
+  <Step>
+    ### Crear API Route
+
+    Crea `app/api/auth/[...all]/route.ts`:
+
+    ```typescript title="app/api/auth/[...all]/route.ts"
+    import { auth } from "@/lib/auth";
+    import { toNextJsHandler } from "better-auth/next-js";
+
+    export const { GET, POST } = toNextJsHandler(auth);
+    ```
+  </Step>
+
+  <Step>
+    ### Crear cliente de auth
+
+    Crea `lib/auth-client.ts`:
+
+    ```typescript title="lib/auth-client.ts"
+    import { createAuthClient } from "better-auth/react";
+
+    export const authClient = createAuthClient({
+      baseURL: process.env.NEXT_PUBLIC_APP_URL,
+    });
+
+    export const {
+      signIn,
+      signUp,
+      signOut,
+      useSession,
+    } = authClient;
+    ```
+  </Step>
+</Steps>
+
+## Variables de entorno
+
+```bash title=".env.local"
+DATABASE_URL="postgresql://user:password@localhost:5432/empiezatusaas"
+BETTER_AUTH_SECRET="tu-secreto-de-32-caracteres-minimo"
+BETTER_AUTH_URL="http://localhost:3000"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+```
+
+<Callout type="warn">
+  Genera un secreto seguro con: `openssl rand -base64 32`
+</Callout>
+
+## Verificar instalación
+
+Inicia el servidor y accede a las rutas de auth:
+
+- `POST /api/auth/sign-up` - Registro
+- `POST /api/auth/sign-in` - Login
+- `POST /api/auth/sign-out` - Logout
+- `GET /api/auth/session` - Sesión actual
+
+## Siguientes pasos
+
+- [Implementar Email y Password](/docs/authentication/better-auth/email-password)
+- [Agregar Social Login](/docs/authentication/better-auth/social-login)
+- [Configurar Magic Links](/docs/authentication/better-auth/magic-link)

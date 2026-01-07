@@ -1,12 +1,14 @@
 "use client";
 
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Shield, Crown, Users, BookOpen, Swords, type LucideIcon } from "lucide-react";
+import { Check, Shield, Crown, Users, BookOpen, Swords } from "lucide-react";
 import Image from "next/image";
+import type { PricingTier, PricingColor, CourseItem } from "@/types";
 
-const tiers = [
+const tiers: PricingTier[] = [
   {
     id: "solo",
     name: "Solo Quest",
@@ -88,7 +90,35 @@ const tiers = [
   },
 ];
 
+const colorMap: Record<PricingColor, {
+  icon: string;
+  check: string;
+  button: string;
+  badge: string;
+}> = {
+  primary: {
+    icon: "text-primary bg-primary/20",
+    check: "text-primary bg-primary/20",
+    button: "bg-primary hover:bg-primary/90",
+    badge: "border-primary/40 bg-primary/10 text-primary",
+  },
+  accent: {
+    icon: "text-accent bg-accent/20",
+    check: "text-accent bg-accent/20",
+    button: "bg-accent hover:bg-accent/90 text-accent-foreground",
+    badge: "border-accent/40 bg-accent/10 text-accent",
+  },
+  gold: {
+    icon: "text-gold bg-gold/20",
+    check: "text-gold bg-gold/20",
+    button: "bg-gold hover:bg-gold/90 text-gold-foreground",
+    badge: "border-gold/40 bg-gold/10 text-gold",
+  },
+};
+
 export function Pricing() {
+  const memoizedTiers = useMemo(() => tiers, []);
+
   return (
     <section id="pricing" className="py-28 relative overflow-hidden">
       {/* Background Image - Cofre del tesoro */}
@@ -98,7 +128,9 @@ export function Pricing() {
           alt="Treasure room"
           fill
           className="object-cover object-center"
-          quality={85}
+          quality={75}
+          loading="lazy"
+          placeholder="empty"
         />
         {/* Overlay para legibilidad */}
         <div className="absolute inset-0 bg-gradient-to-b from-background/85 via-background/70 to-background/90" />
@@ -145,28 +177,8 @@ export function Pricing() {
 
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-          {tiers.map((tier, index) => {
-            const colorMap = {
-              primary: {
-                icon: "text-primary bg-primary/20",
-                check: "text-primary bg-primary/20",
-                button: "bg-primary hover:bg-primary/90",
-                badge: "border-primary/40 bg-primary/10 text-primary",
-              },
-              accent: {
-                icon: "text-accent bg-accent/20",
-                check: "text-accent bg-accent/20",
-                button: "bg-accent hover:bg-accent/90 text-accent-foreground",
-                badge: "border-accent/40 bg-accent/10 text-accent",
-              },
-              gold: {
-                icon: "text-gold bg-gold/20",
-                check: "text-gold bg-gold/20",
-                button: "bg-gold hover:bg-gold/90 text-gold-foreground",
-                badge: "border-gold/40 bg-gold/10 text-gold",
-              },
-            };
-            const colorClasses = colorMap[tier.color as keyof typeof colorMap];
+          {memoizedTiers.map((tier, index) => {
+            const colorClasses = colorMap[tier.color];
 
             return (
               <motion.div
@@ -284,7 +296,7 @@ export function Pricing() {
                         <span className="font-bold text-gold">{tier.course.title}</span>
                       </div>
                       <div className="space-y-2">
-                        {tier.course.items.map((item: { icon: LucideIcon; text: string }) => {
+                        {tier.course.items.map((item: CourseItem) => {
                           const CourseIcon = item.icon;
                           return (
                             <div key={item.text} className="flex items-center gap-2">

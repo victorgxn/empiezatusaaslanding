@@ -1,10 +1,31 @@
 "use client";
 
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Sparkles, Star, Users, Map, Trophy, Rocket } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import type { SparklePosition } from "@/types";
+
+// Predefined sparkle positions to avoid hydration mismatch
+const sparklePositions: SparklePosition[] = [
+  { left: 12, top: 8, duration: 4.2, delay: 0.5 },
+  { left: 85, top: 15, duration: 3.8, delay: 1.2 },
+  { left: 25, top: 72, duration: 5.1, delay: 0.8 },
+  { left: 92, top: 45, duration: 3.5, delay: 2.1 },
+  { left: 8, top: 35, duration: 4.8, delay: 1.5 },
+  { left: 68, top: 88, duration: 3.9, delay: 0.3 },
+  { left: 45, top: 22, duration: 5.5, delay: 2.8 },
+  { left: 78, top: 68, duration: 4.1, delay: 1.8 },
+  { left: 32, top: 55, duration: 3.6, delay: 0.9 },
+  { left: 55, top: 12, duration: 4.5, delay: 2.3 },
+  { left: 18, top: 92, duration: 5.2, delay: 1.1 },
+  { left: 88, top: 78, duration: 3.7, delay: 0.6 },
+  { left: 42, top: 42, duration: 4.9, delay: 2.5 },
+  { left: 62, top: 58, duration: 3.4, delay: 1.7 },
+  { left: 5, top: 65, duration: 5.8, delay: 0.2 },
+];
 
 export function Hero() {
   return (
@@ -27,26 +48,18 @@ export function Hero() {
       {/* Efectos de luz de antorcha */}
       <div className="absolute bottom-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/20 rounded-full blur-[150px] animate-pulse" />
 
-      {/* Floating sparkles */}
+      {/* Floating sparkles - CSS animated for better performance */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-10">
-        {[...Array(15)].map((_, i) => (
-          <motion.div
+        {sparklePositions.map((sparkle, i) => (
+          <div
             key={`sparkle-${i}`}
-            className="absolute w-1.5 h-1.5 bg-gold/60 rounded-full"
+            className="absolute w-1.5 h-1.5 bg-gold/60 rounded-full sparkle"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              y: [-30, 30, -30],
-              opacity: [0.2, 1, 0.2],
-              scale: [0.5, 1.5, 0.5],
-            }}
-            transition={{
-              duration: 3 + Math.random() * 3,
-              repeat: Infinity,
-              delay: Math.random() * 3,
-            }}
+              left: `${sparkle.left}%`,
+              top: `${sparkle.top}%`,
+              "--sparkle-duration": `${sparkle.duration}s`,
+              "--sparkle-delay": `${sparkle.delay}s`,
+            } as React.CSSProperties}
           />
         ))}
       </div>
@@ -101,12 +114,19 @@ export function Hero() {
 
           {/* Subheadline */}
           <motion.p
-            className="text-xl sm:text-2xl text-foreground/90 max-w-3xl mx-auto mb-12 leading-relaxed drop-shadow-lg"
+            className="text-lg sm:text-xl text-foreground/90 max-w-3xl mx-auto mb-12 leading-relaxed drop-shadow-lg"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.5 }}
           >
-            El boilerplate NextJS que te ahorra <span className="text-destructive font-black underline decoration-destructive decoration-4 underline-offset-4">3 meses</span> de desarrollo y te da las armas para conquistar tu <span className="text-gold font-black underline decoration-gold decoration-4 underline-offset-4">primer € online</span>
+            El boilerplate NextJS que te ahorra hasta{" "}
+            <span className="bg-destructive/20 text-destructive font-black px-2 py-0.5 rounded-md border border-destructive/50">
+              3 meses
+            </span>{" "}
+            de desarrollo y te da las herramientas para conseguir tu{" "}
+            <span className="bg-gold/20 text-gold font-black px-2 py-0.5 rounded-md border border-gold/50">
+              primer € online
+            </span>
           </motion.p>
 
           {/* CTA Buttons */}
@@ -127,7 +147,7 @@ export function Hero() {
             <Button
               variant="outline"
               size="lg"
-              className="text-xl px-10 py-7 border-3 border-border/80 bg-background/50 backdrop-blur-sm hover:border-accent hover:bg-accent/20 rounded-2xl font-bold cartoon-shadow-sm cartoon-btn"
+              className="text-xl px-10 py-7 border-3 border-border/80 bg-background/50 backdrop-blur-sm hover:border-accent hover:bg-accent/20 hover:text-foreground rounded-2xl font-bold cartoon-shadow-sm cartoon-btn"
             >
               <Trophy className="w-6 h-6 mr-3 text-accent" />
               Ver Demo

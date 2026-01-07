@@ -1,0 +1,242 @@
+---
+title: Checkout
+description: Implementa páginas de pago con Stripe Checkout
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Checkout
+
+Stripe Checkout proporciona páginas de pago hosted, seguras y optimizadas para conversión.
+
+## Crear sesión de checkout
+
+```typescript title="app/api/stripe/checkout/route.ts"
+import { stripe } from "@/lib/stripe";
+import { auth } from "@/lib/auth"; // o supabase
+import { headers } from "next/headers";
+
+export async function POST(request: Request) {
+  try {
+    const { priceId, mode = "subscription" } = await request.json();
+
+    // Obtener usuario autenticado
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session?.user) {
+      return Response.json(
+        { error: "No autenticado" },
+        { status: 401 }
+      );
+    }
+
+    // Buscar o crear cliente de Stripe
+    let customerId: string;
+
+    // Buscar cliente existente
+    const customers = await stripe.customers.list({
+      email: session.user.email,
+      limit: 1,
+    });
+
+    if (customers.data.length > 0) {
+      customerId = customers.data[0].id;
+    } else {
+      // Crear nuevo cliente
+      const customer = await stripe.customers.create({
+        email: session.user.email!,
+        name: session.user.name || undefined,
+        metadata: {
+          userId: session.user.id,
+        },
+      });
+      customerId = customer.id;
+    }
+
+    // Crear sesión de checkout
+    const checkoutSession = await stripe.checkout.sessions.create({
+      customer: customerId,
+      mode: mode as "subscription" | "payment",
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?canceled=true`,
+      metadata: {
+        userId: session.user.id,
+      },
+      subscription_data:
+        mode === "subscription"
+          ? {
+              trial_period_days: 7, // 7 días de prueba
+              metadata: {
+                userId: session.user.id,
+              },
+            }
+          : undefined,
+    });
+
+    return Response.json({ url: checkoutSession.url });
+  } catch (error) {
+    console.error("Checkout error:", error);
+    return Response.json(
+      { error: "Error creando checkout" },
+      { status: 500 }
+    );
+  }
+}
+```
+
+## Botón de checkout
+
+```tsx title="components/checkout-button.tsx"
+"use client";
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+
+interface CheckoutButtonProps {
+  priceId: string;
+  mode?: "subscription" | "payment";
+  children: React.ReactNode;
+}
+
+export function CheckoutButton({
+  priceId,
+  mode = "subscription",
+  children,
+}: CheckoutButtonProps) {
+  const [loading, setLoading] = useState(false);
+
+  const handleCheckout = async () => {
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ priceId, mode }),
+      });
+
+      const data = await response.json();
+
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Error al procesar el pago");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Button onClick={handleCheckout} disabled={loading} className="w-full">
+      {loading ? "Procesando..." : children}
+    </Button>
+  );
+}
+```
+
+## Componente de precios
+
+```tsx title="components/pricing-cards.tsx"
+import { CheckoutButton } from "./checkout-button";
+import { PLANS } from "@/config/stripe";
+import { Check } from "lucide-react";
+
+export function PricingCards() {
+  return (
+    <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      {Object.entries(PLANS).map(([id, plan]) => (
+        <div
+          key={id}
+          className="border rounded-xl p-8 space-y-6"
+        >
+          <div>
+            <h3 className="text-2xl font-bold">{plan.name}</h3>
+            <p className="text-muted-foreground">{plan.description}</p>
+          </div>
+
+          <div className="flex items-baseline gap-1">
+            <span className="text-4xl font-bold">${plan.monthlyPrice}</span>
+            <span className="text-muted-foreground">/mes</span>
+          </div>
+
+          <CheckoutButton priceId={plan.stripePriceId.monthly}>
+            Comenzar con {plan.name}
+          </CheckoutButton>
+
+          <ul className="space-y-3">
+            {plan.features.map((feature) => (
+              <li key={feature} className="flex items-center gap-2">
+                <Check className="w-5 h-5 text-green-500" />
+                <span>{feature}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+## Página de éxito
+
+```tsx title="app/dashboard/page.tsx"
+import { Suspense } from "react";
+
+function SuccessMessage() {
+  return (
+    <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+      <h2 className="font-semibold text-green-800">
+        ¡Pago completado!
+      </h2>
+      <p className="text-green-700">
+        Tu suscripción está activa. Disfruta de todas las funcionalidades.
+      </p>
+    </div>
+  );
+}
+
+export default function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ success?: string }>;
+}) {
+  return (
+    <Suspense>
+      <DashboardContent searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function DashboardContent({
+  searchParams,
+}: {
+  searchParams: Promise<{ success?: string }>;
+}) {
+  const params = await searchParams;
+
+  return (
+    <div>
+      {params.success === "true" && <SuccessMessage />}
+      {/* Resto del dashboard */}
+    </div>
+  );
+}
+```
+
+<Callout type="info">
+  Stripe Checkout maneja automáticamente la validación de tarjetas, 3D Secure, y múltiples métodos de pago.
+</Callout>

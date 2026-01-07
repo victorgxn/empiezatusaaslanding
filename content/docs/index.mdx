@@ -1,0 +1,93 @@
+---
+title: EmpiezaTuSaaS
+description: El boilerplate definitivo para lanzar tu SaaS en tiempo récord con Next.js, autenticación, pagos y más.
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Rocket, Shield, CreditCard, Mail, Palette, Search, Server } from 'lucide-react';
+
+# Bienvenido a EmpiezaTuSaaS
+
+El boilerplate definitivo para **indie hackers** y desarrolladores que quieren lanzar su SaaS sin perder tiempo en configuraciones repetitivas.
+
+## Elige tu camino
+
+EmpiezaTuSaaS te ofrece **dos caminos** de implementación para que elijas el que mejor se adapte a tus necesidades:
+
+<Cards>
+  <Card
+    icon={<Shield className="w-6 h-6" />}
+    title="Better Auth + PostgreSQL"
+    description="Control total sobre tu autenticación y base de datos. Ideal para proyectos que requieren máxima personalización."
+    href="/docs/authentication/better-auth"
+  />
+  <Card
+    icon={<Server className="w-6 h-6" />}
+    title="Supabase"
+    description="Backend completo as a Service. Autenticación, base de datos, storage y realtime en una sola plataforma."
+    href="/docs/authentication/supabase"
+  />
+</Cards>
+
+## Qué incluye
+
+<Cards>
+  <Card
+    icon={<Rocket className="w-6 h-6" />}
+    title="Getting Started"
+    description="Instalación y configuración inicial en menos de 5 minutos."
+    href="/docs/getting-started"
+  />
+  <Card
+    icon={<Shield className="w-6 h-6" />}
+    title="Autenticación"
+    description="Email/password, social login, magic links y 2FA."
+    href="/docs/authentication"
+  />
+  <Card
+    icon={<CreditCard className="w-6 h-6" />}
+    title="Pagos con Stripe"
+    description="Checkout, suscripciones, webhooks y customer portal."
+    href="/docs/payments"
+  />
+  <Card
+    icon={<Mail className="w-6 h-6" />}
+    title="Emails con Resend"
+    description="Templates con React Email y emails transaccionales."
+    href="/docs/email"
+  />
+  <Card
+    icon={<Palette className="w-6 h-6" />}
+    title="Componentes UI"
+    description="Componentes pre-construidos con shadcn/ui y Tailwind."
+    href="/docs/components"
+  />
+  <Card
+    icon={<Search className="w-6 h-6" />}
+    title="SEO Optimizado"
+    description="Metadata, sitemap y datos estructurados configurados."
+    href="/docs/seo"
+  />
+</Cards>
+
+## Stack Tecnológico
+
+- **Framework**: Next.js 16 con App Router
+- **Estilos**: Tailwind CSS v4 + shadcn/ui
+- **Autenticación**: Better Auth o Supabase Auth
+- **Base de datos**: PostgreSQL con Prisma o Supabase
+- **Pagos**: Stripe
+- **Emails**: Resend + React Email
+- **Deployment**: Vercel
+
+## Empezar ahora
+
+```bash
+git clone https://github.com/tu-usuario/empiezatusaas.git
+cd empiezatusaas
+npm install
+cp .env.example .env.local
+npm run dev
+```
+
+Abre [http://localhost:3000](http://localhost:3000) y comienza a construir tu SaaS.

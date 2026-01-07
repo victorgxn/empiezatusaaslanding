@@ -1,0 +1,98 @@
+---
+title: Introducción
+description: Comienza a construir tu SaaS en minutos con EmpiezaTuSaaS
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+# Introducción
+
+EmpiezaTuSaaS es un boilerplate completo para lanzar tu SaaS rápidamente. Incluye todo lo que necesitas: autenticación, pagos, emails, base de datos y más.
+
+## Requisitos previos
+
+Antes de comenzar, asegúrate de tener instalado:
+
+- **Node.js** 18.17 o superior
+- **npm**, **pnpm** o **yarn**
+- **Git**
+- Una cuenta en [Stripe](https://stripe.com) (para pagos)
+- Una cuenta en [Resend](https://resend.com) (para emails)
+
+<Callout type="info">
+  Dependiendo del camino que elijas, también necesitarás:
+  - **Better Auth + PostgreSQL**: Una base de datos PostgreSQL (local o en la nube)
+  - **Supabase**: Una cuenta gratuita en [Supabase](https://supabase.com)
+</Callout>
+
+## Inicio rápido
+
+<Steps>
+  <Step>
+    ### Clona el repositorio
+
+    ```bash
+    git clone https://github.com/tu-usuario/empiezatusaas.git
+    cd empiezatusaas
+    ```
+  </Step>
+
+  <Step>
+    ### Instala las dependencias
+
+    ```bash
+    npm install
+    ```
+  </Step>
+
+  <Step>
+    ### Configura las variables de entorno
+
+    ```bash
+    cp .env.example .env.local
+    ```
+
+    Edita `.env.local` con tus credenciales.
+  </Step>
+
+  <Step>
+    ### Inicia el servidor de desarrollo
+
+    ```bash
+    npm run dev
+    ```
+
+    Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
+  </Step>
+</Steps>
+
+## Elige tu camino
+
+EmpiezaTuSaaS soporta dos configuraciones de backend:
+
+### Opción A: Better Auth + PostgreSQL
+
+Ideal si quieres:
+- Control total sobre tu autenticación
+- Usar tu propia base de datos PostgreSQL
+- Máxima flexibilidad y personalización
+- Cero vendor lock-in
+
+[Comenzar con Better Auth →](/docs/authentication/better-auth)
+
+### Opción B: Supabase
+
+Ideal si quieres:
+- Setup más rápido
+- Backend completo as a Service
+- Autenticación, storage y realtime incluidos
+- Dashboard visual para gestionar datos
+
+[Comenzar con Supabase →](/docs/authentication/supabase)
+
+## Siguientes pasos
+
+1. [Instalación detallada](/docs/getting-started/installation)
+2. [Estructura del proyecto](/docs/getting-started/project-structure)
+3. [Variables de entorno](/docs/getting-started/environment-variables)

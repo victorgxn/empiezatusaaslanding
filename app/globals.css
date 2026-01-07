@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "fumadocs-ui/style.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -274,6 +275,24 @@
 
   .pulse-glow {
     animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  /* Sparkle animation - GPU accelerated */
+  @keyframes sparkle-float {
+    0%, 100% {
+      transform: translateY(-30px) scale(0.5);
+      opacity: 0.2;
+    }
+    50% {
+      transform: translateY(30px) scale(1.5);
+      opacity: 1;
+    }
+  }
+
+  .sparkle {
+    will-change: transform, opacity;
+    animation: sparkle-float var(--sparkle-duration, 4s) ease-in-out infinite;
+    animation-delay: var(--sparkle-delay, 0s);
   }
 }
 

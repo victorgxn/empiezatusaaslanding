@@ -1,0 +1,129 @@
+---
+title: Setup de Supabase DB
+description: Configura Supabase Database en tu proyecto
+---
+
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+# Setup de Supabase DB
+
+Configura la conexión a tu base de datos Supabase.
+
+## Configuración
+
+<Steps>
+  <Step>
+    ### Instalar cliente
+
+    ```bash
+    npm install @supabase/supabase-js
+    ```
+  </Step>
+
+  <Step>
+    ### Obtener credenciales
+
+    En tu dashboard de Supabase:
+    1. Ve a **Settings > API**
+    2. Copia **Project URL** y **anon** key
+
+    ```bash title=".env.local"
+    NEXT_PUBLIC_SUPABASE_URL="https://xxx.supabase.co"
+    NEXT_PUBLIC_SUPABASE_ANON_KEY="eyJ..."
+    ```
+  </Step>
+
+  <Step>
+    ### Crear cliente
+
+    ```typescript title="lib/supabase/client.ts"
+    import { createBrowserClient } from "@supabase/ssr";
+
+    export function createClient() {
+      return createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+    }
+    ```
+
+    ```typescript title="lib/supabase/server.ts"
+    import { createServerClient } from "@supabase/ssr";
+    import { cookies } from "next/headers";
+
+    export async function createClient() {
+      const cookieStore = await cookies();
+
+      return createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            getAll() {
+              return cookieStore.getAll();
+            },
+            setAll(cookiesToSet) {
+              try {
+                cookiesToSet.forEach(({ name, value, options }) =>
+                  cookieStore.set(name, value, options)
+                );
+              } catch {}
+            },
+          },
+        }
+      );
+    }
+    ```
+  </Step>
+</Steps>
+
+## Queries básicas
+
+```typescript
+const supabase = createClient();
+
+// SELECT
+const { data, error } = await supabase
+  .from("posts")
+  .select("*")
+  .eq("published", true);
+
+// INSERT
+const { data, error } = await supabase
+  .from("posts")
+  .insert({ title: "Nuevo post", content: "..." })
+  .select()
+  .single();
+
+// UPDATE
+const { data, error } = await supabase
+  .from("posts")
+  .update({ title: "Título actualizado" })
+  .eq("id", postId);
+
+// DELETE
+const { error } = await supabase
+  .from("posts")
+  .delete()
+  .eq("id", postId);
+```
+
+## Tipos TypeScript
+
+Genera tipos desde tu schema:
+
+```bash
+npx supabase gen types typescript --project-id [PROJECT_REF] > types/supabase.ts
+```
+
+Úsalos en tu cliente:
+
+```typescript
+import { Database } from "@/types/supabase";
+
+const supabase = createClient<Database>();
+
+// Ahora tienes autocompletado
+const { data } = await supabase.from("posts").select("*");
+// data tiene el tipo correcto
+```

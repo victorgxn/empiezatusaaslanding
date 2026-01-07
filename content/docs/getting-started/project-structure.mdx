@@ -1,0 +1,122 @@
+---
+title: Estructura del Proyecto
+description: Entiende cómo está organizado EmpiezaTuSaaS
+---
+
+import { Files, Folder, File } from 'fumadocs-ui/components/files';
+
+# Estructura del Proyecto
+
+EmpiezaTuSaaS sigue las convenciones de Next.js App Router con algunas adiciones para organizar mejor el código.
+
+## Vista general
+
+<Files>
+  <Folder name="app" defaultOpen>
+    <Folder name="(auth)">
+      <File name="login/page.tsx" />
+      <File name="register/page.tsx" />
+      <File name="forgot-password/page.tsx" />
+    </Folder>
+    <Folder name="(dashboard)">
+      <File name="dashboard/page.tsx" />
+      <File name="settings/page.tsx" />
+      <File name="billing/page.tsx" />
+    </Folder>
+    <Folder name="api">
+      <Folder name="auth">
+        <File name="[...all]/route.ts" />
+      </Folder>
+      <Folder name="stripe">
+        <File name="checkout/route.ts" />
+        <File name="webhooks/route.ts" />
+        <File name="portal/route.ts" />
+      </Folder>
+    </Folder>
+    <File name="layout.tsx" />
+    <File name="page.tsx" />
+    <File name="globals.css" />
+  </Folder>
+  <Folder name="components" defaultOpen>
+    <Folder name="ui">
+      <File name="button.tsx" />
+      <File name="card.tsx" />
+      <File name="..." />
+    </Folder>
+    <Folder name="landing">
+      <File name="hero.tsx" />
+      <File name="features.tsx" />
+      <File name="pricing.tsx" />
+    </Folder>
+    <Folder name="auth">
+      <File name="login-form.tsx" />
+      <File name="register-form.tsx" />
+    </Folder>
+  </Folder>
+  <Folder name="lib">
+    <File name="utils.ts" />
+    <File name="auth.ts" />
+    <File name="stripe.ts" />
+    <File name="email.ts" />
+  </Folder>
+  <Folder name="prisma">
+    <File name="schema.prisma" />
+  </Folder>
+  <File name=".env.local" />
+  <File name="next.config.ts" />
+  <File name="tailwind.config.ts" />
+</Files>
+
+## Directorios principales
+
+### `/app`
+
+Contiene todas las rutas de la aplicación usando Next.js App Router.
+
+| Directorio | Descripción |
+|------------|-------------|
+| `(auth)` | Páginas de autenticación (login, registro, etc.) |
+| `(dashboard)` | Páginas protegidas del dashboard |
+| `api` | API Routes para backend |
+
+### `/components`
+
+Componentes React reutilizables organizados por funcionalidad.
+
+| Directorio | Descripción |
+|------------|-------------|
+| `ui` | Componentes base de shadcn/ui |
+| `landing` | Componentes de la landing page |
+| `auth` | Formularios y componentes de autenticación |
+
+### `/lib`
+
+Utilidades y configuraciones.
+
+| Archivo | Descripción |
+|---------|-------------|
+| `utils.ts` | Función `cn()` para clases de Tailwind |
+| `auth.ts` | Configuración de autenticación |
+| `stripe.ts` | Cliente y utilidades de Stripe |
+| `email.ts` | Configuración de Resend |
+
+### `/prisma`
+
+Esquema de base de datos y migraciones (solo para Better Auth + PostgreSQL).
+
+## Archivos de configuración
+
+| Archivo | Descripción |
+|---------|-------------|
+| `next.config.ts` | Configuración de Next.js |
+| `tailwind.config.ts` | Configuración de Tailwind CSS |
+| `components.json` | Configuración de shadcn/ui |
+| `tsconfig.json` | Configuración de TypeScript |
+
+## Convenciones de nombres
+
+- **Componentes**: PascalCase (`LoginForm.tsx`)
+- **Utilidades**: camelCase (`formatDate.ts`)
+- **Rutas**: kebab-case (`/forgot-password`)
+- **Archivos de página**: siempre `page.tsx`
+- **Archivos de layout**: siempre `layout.tsx`

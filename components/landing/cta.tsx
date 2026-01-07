@@ -15,7 +15,9 @@ export function CTA() {
           alt="Battle arena"
           fill
           className="object-cover object-center"
-          quality={85}
+          quality={75}
+          loading="lazy"
+          placeholder="empty"
         />
         {/* Overlay para legibilidad */}
         <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/70 to-background/80" />

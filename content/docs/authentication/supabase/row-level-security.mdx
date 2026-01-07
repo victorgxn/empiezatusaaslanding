@@ -1,0 +1,255 @@
+---
+title: Row Level Security
+description: Protege tus datos con políticas de acceso a nivel de fila
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Row Level Security (RLS)
+
+Row Level Security permite definir quién puede acceder a qué datos en tu base de datos PostgreSQL.
+
+## Por qué usar RLS
+
+- **Seguridad a nivel de base de datos**: Las políticas se aplican siempre
+- **Simplifica el código**: No necesitas verificaciones manuales
+- **Previene errores**: Imposible acceder a datos de otros usuarios
+
+## Habilitar RLS
+
+En el SQL Editor de Supabase:
+
+```sql
+-- Habilitar RLS en una tabla
+ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
+```
+
+<Callout type="warn">
+  Una vez habilitado RLS, nadie puede acceder a los datos hasta que crees políticas.
+</Callout>
+
+## Políticas básicas
+
+### Solo leer tus propios datos
+
+```sql
+-- Los usuarios solo pueden ver sus propios posts
+CREATE POLICY "Users can view own posts"
+ON posts
+FOR SELECT
+USING (auth.uid() = user_id);
+```
+
+### CRUD completo para el propietario
+
+```sql
+-- Ver posts propios
+CREATE POLICY "Users can view own posts"
+ON posts FOR SELECT
+USING (auth.uid() = user_id);
+
+-- Crear posts
+CREATE POLICY "Users can create posts"
+ON posts FOR INSERT
+WITH CHECK (auth.uid() = user_id);
+
+-- Actualizar posts propios
+CREATE POLICY "Users can update own posts"
+ON posts FOR UPDATE
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+
+-- Eliminar posts propios
+CREATE POLICY "Users can delete own posts"
+ON posts FOR DELETE
+USING (auth.uid() = user_id);
+```
+
+## Políticas avanzadas
+
+### Contenido público + privado
+
+```sql
+-- Cualquiera puede ver posts públicos
+CREATE POLICY "Anyone can view public posts"
+ON posts FOR SELECT
+USING (is_public = true);
+
+-- El autor puede ver todos sus posts
+CREATE POLICY "Authors can view all own posts"
+ON posts FOR SELECT
+USING (auth.uid() = user_id);
+```
+
+### Roles y permisos
+
+```sql
+-- Admins pueden ver todo
+CREATE POLICY "Admins can view all"
+ON posts FOR SELECT
+USING (
+  EXISTS (
+    SELECT 1 FROM profiles
+    WHERE id = auth.uid()
+    AND role = 'admin'
+  )
+);
+```
+
+### Acceso basado en equipo
+
+```sql
+-- Miembros del equipo pueden ver posts del equipo
+CREATE POLICY "Team members can view team posts"
+ON posts FOR SELECT
+USING (
+  team_id IN (
+    SELECT team_id FROM team_members
+    WHERE user_id = auth.uid()
+  )
+);
+```
+
+## Ejemplo completo: App de notas
+
+### Schema
+
+```sql
+-- Tabla de notas
+CREATE TABLE notes (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) NOT NULL,
+  title TEXT NOT NULL,
+  content TEXT,
+  is_public BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Habilitar RLS
+ALTER TABLE notes ENABLE ROW LEVEL SECURITY;
+```
+
+### Políticas
+
+```sql
+-- Ver: propias o públicas
+CREATE POLICY "View notes"
+ON notes FOR SELECT
+USING (
+  auth.uid() = user_id
+  OR is_public = true
+);
+
+-- Crear: solo autenticados, asignando su user_id
+CREATE POLICY "Create notes"
+ON notes FOR INSERT
+WITH CHECK (auth.uid() = user_id);
+
+-- Actualizar: solo propias
+CREATE POLICY "Update own notes"
+ON notes FOR UPDATE
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+
+-- Eliminar: solo propias
+CREATE POLICY "Delete own notes"
+ON notes FOR DELETE
+USING (auth.uid() = user_id);
+```
+
+## Usar desde Next.js
+
+Con RLS configurado, tus queries son automáticamente filtradas:
+
+```typescript title="app/notes/page.tsx"
+import { createClient } from "@/lib/supabase/server";
+
+export default async function NotesPage() {
+  const supabase = await createClient();
+
+  // Solo devuelve notas que el usuario puede ver
+  // según las políticas RLS
+  const { data: notes } = await supabase
+    .from("notes")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  return (
+    <div>
+      <h1>Mis notas</h1>
+      {notes?.map((note) => (
+        <div key={note.id}>
+          <h2>{note.title}</h2>
+          <p>{note.content}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+## Crear nota
+
+```typescript title="app/notes/actions.ts"
+"use server";
+
+import { createClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
+
+export async function createNote(formData: FormData) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Not authenticated");
+  }
+
+  const { error } = await supabase.from("notes").insert({
+    user_id: user.id, // RLS verificará esto
+    title: formData.get("title") as string,
+    content: formData.get("content") as string,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/notes");
+}
+```
+
+## Funciones útiles de auth
+
+```sql
+-- ID del usuario actual
+auth.uid()
+
+-- JWT completo del usuario
+auth.jwt()
+
+-- Email del usuario
+auth.jwt() ->> 'email'
+
+-- Rol del usuario (si usas custom claims)
+auth.jwt() ->> 'role'
+```
+
+## Debugging
+
+Para ver por qué una política falla:
+
+```sql
+-- Ver políticas de una tabla
+SELECT * FROM pg_policies WHERE tablename = 'notes';
+
+-- Verificar el usuario actual
+SELECT auth.uid();
+```
+
+<Callout type="info">
+  RLS es la forma recomendada de proteger datos en Supabase. Asegúrate de habilitarlo en todas las tablas que contengan datos de usuarios.
+</Callout>

@@ -1,0 +1,71 @@
+---
+title: Supabase Auth
+description: Autenticación completa con Supabase
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+# Supabase Auth
+
+Supabase Auth proporciona autenticación completa como servicio, integrada con tu base de datos Supabase.
+
+## Por qué Supabase Auth
+
+- **Setup instantáneo**: Funciona desde el minuto cero
+- **UI incluida**: Dashboard para gestionar usuarios
+- **Integración nativa**: Con database, storage y realtime
+- **Row Level Security**: Políticas de acceso a nivel de fila
+- **Múltiples providers**: OAuth, email, phone built-in
+
+## Guías disponibles
+
+<Cards>
+  <Card
+    title="Setup inicial"
+    description="Configura Supabase Auth en tu proyecto Next.js"
+    href="/docs/authentication/supabase/setup"
+  />
+  <Card
+    title="Email y Password"
+    description="Implementa autenticación con email y contraseña"
+    href="/docs/authentication/supabase/email-password"
+  />
+  <Card
+    title="Social Login"
+    description="Agrega Google, GitHub y otros providers desde el dashboard"
+    href="/docs/authentication/supabase/social-login"
+  />
+  <Card
+    title="Row Level Security"
+    description="Protege tus datos con políticas de acceso"
+    href="/docs/authentication/supabase/row-level-security"
+  />
+</Cards>
+
+## Características incluidas
+
+| Característica | Incluido |
+|----------------|----------|
+| Email/Password | Sí |
+| Magic Links | Sí |
+| OAuth Providers | Sí |
+| Phone Auth | Sí |
+| 2FA | Sí |
+| Verificación de email | Sí |
+| Recuperación de contraseña | Sí |
+| Sesiones | Sí |
+| User Management UI | Sí |
+
+<Callout type="info">
+  Supabase Auth es gratuito hasta 50,000 usuarios activos mensuales.
+</Callout>
+
+## Arquitectura
+
+Supabase Auth funciona junto con:
+
+- **PostgreSQL**: Tu base de datos
+- **GoTrue**: El servidor de autenticación
+- **PostgREST**: API REST automática
+- **Realtime**: Websockets para datos en vivo

@@ -1,0 +1,191 @@
+---
+title: Datos Estructurados
+description: Schema.org y JSON-LD para rich snippets
+---
+
+# Datos Estructurados
+
+Los datos estructurados ayudan a los motores de búsqueda a entender tu contenido.
+
+## JSON-LD en Next.js
+
+```tsx title="components/json-ld.tsx"
+export function JsonLd({ data }: { data: object }) {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
+  );
+}
+```
+
+## Organización
+
+```tsx title="app/layout.tsx"
+import { JsonLd } from "@/components/json-ld";
+
+export default function RootLayout({ children }) {
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "EmpiezaTuSaaS",
+    url: "https://tuapp.com",
+    logo: "https://tuapp.com/logo.png",
+    sameAs: [
+      "https://twitter.com/tuhandle",
+      "https://github.com/tuhandle",
+    ],
+    contactPoint: {
+      "@type": "ContactPoint",
+      email: "hola@tuapp.com",
+      contactType: "customer service",
+    },
+  };
+
+  return (
+    <html>
+      <body>
+        <JsonLd data={organizationSchema} />
+        {children}
+      </body>
+    </html>
+  );
+}
+```
+
+## Producto SaaS
+
+```tsx title="app/pricing/page.tsx"
+import { JsonLd } from "@/components/json-ld";
+
+export default function PricingPage() {
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "EmpiezaTuSaaS",
+    applicationCategory: "DeveloperApplication",
+    operatingSystem: "Web",
+    offers: {
+      "@type": "AggregateOffer",
+      lowPrice: "9",
+      highPrice: "99",
+      priceCurrency: "USD",
+      offerCount: "3",
+    },
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "4.8",
+      ratingCount: "150",
+    },
+  };
+
+  return (
+    <>
+      <JsonLd data={productSchema} />
+      {/* Contenido de pricing */}
+    </>
+  );
+}
+```
+
+## Artículo de blog
+
+```tsx title="app/blog/[slug]/page.tsx"
+import { JsonLd } from "@/components/json-ld";
+
+export default async function BlogPost({ params }) {
+  const post = await getPost(params.slug);
+
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.excerpt,
+    image: post.image,
+    datePublished: post.publishedAt,
+    dateModified: post.updatedAt,
+    author: {
+      "@type": "Person",
+      name: post.author.name,
+      url: post.author.url,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "EmpiezaTuSaaS",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://tuapp.com/logo.png",
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `https://tuapp.com/blog/${post.slug}`,
+    },
+  };
+
+  return (
+    <>
+      <JsonLd data={articleSchema} />
+      <article>
+        <h1>{post.title}</h1>
+        {/* Contenido del post */}
+      </article>
+    </>
+  );
+}
+```
+
+## FAQ
+
+```tsx title="components/faq-schema.tsx"
+import { JsonLd } from "@/components/json-ld";
+
+interface FAQItem {
+  question: string;
+  answer: string;
+}
+
+export function FAQSchema({ items }: { items: FAQItem[] }) {
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
+
+  return <JsonLd data={faqSchema} />;
+}
+```
+
+## Breadcrumbs
+
+```tsx title="components/breadcrumb-schema.tsx"
+import { JsonLd } from "@/components/json-ld";
+
+interface BreadcrumbItem {
+  name: string;
+  url: string;
+}
+
+export function BreadcrumbSchema({ items }: { items: BreadcrumbItem[] }) {
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  };
+
+  return <JsonLd data={breadcrumbSchema} />;
+}
+```

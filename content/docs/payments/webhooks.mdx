@@ -1,0 +1,225 @@
+---
+title: Webhooks
+description: Sincroniza eventos de Stripe con tu base de datos
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+# Webhooks
+
+Los webhooks permiten recibir notificaciones de Stripe cuando ocurren eventos.
+
+## Configuración
+
+<Steps>
+  <Step>
+    ### Crear endpoint en Stripe
+
+    1. Ve a **Developers > Webhooks** en el dashboard
+    2. Click en **Add endpoint**
+    3. URL: `https://tuapp.com/api/stripe/webhooks`
+    4. Selecciona los eventos a escuchar
+  </Step>
+
+  <Step>
+    ### Obtener signing secret
+
+    Después de crear el endpoint, copia el **Signing secret**:
+
+    ```bash title=".env.local"
+    STRIPE_WEBHOOK_SECRET="whsec_..."
+    ```
+  </Step>
+
+  <Step>
+    ### Eventos recomendados
+
+    - `checkout.session.completed`
+    - `customer.subscription.created`
+    - `customer.subscription.updated`
+    - `customer.subscription.deleted`
+    - `invoice.payment_succeeded`
+    - `invoice.payment_failed`
+  </Step>
+</Steps>
+
+## Handler de webhooks
+
+```typescript title="app/api/stripe/webhooks/route.ts"
+import { stripe } from "@/lib/stripe";
+import { db } from "@/lib/db";
+import { headers } from "next/headers";
+import type Stripe from "stripe";
+
+export async function POST(request: Request) {
+  const body = await request.text();
+  const headersList = await headers();
+  const signature = headersList.get("stripe-signature")!;
+
+  let event: Stripe.Event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET!
+    );
+  } catch (error) {
+    console.error("Webhook signature verification failed");
+    return Response.json({ error: "Invalid signature" }, { status: 400 });
+  }
+
+  try {
+    switch (event.type) {
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        await handleCheckoutCompleted(session);
+        break;
+      }
+
+      case "customer.subscription.created":
+      case "customer.subscription.updated": {
+        const subscription = event.data.object as Stripe.Subscription;
+        await handleSubscriptionChange(subscription);
+        break;
+      }
+
+      case "customer.subscription.deleted": {
+        const subscription = event.data.object as Stripe.Subscription;
+        await handleSubscriptionDeleted(subscription);
+        break;
+      }
+
+      case "invoice.payment_failed": {
+        const invoice = event.data.object as Stripe.Invoice;
+        await handlePaymentFailed(invoice);
+        break;
+      }
+
+      default:
+        console.log(`Unhandled event: ${event.type}`);
+    }
+
+    return Response.json({ received: true });
+  } catch (error) {
+    console.error("Webhook handler error:", error);
+    return Response.json(
+      { error: "Webhook handler failed" },
+      { status: 500 }
+    );
+  }
+}
+
+async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
+  const userId = session.metadata?.userId;
+  const customerId = session.customer as string;
+  const subscriptionId = session.subscription as string;
+
+  if (!userId) {
+    console.error("No userId in session metadata");
+    return;
+  }
+
+  // Obtener detalles de la suscripción
+  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+  await db.subscription.upsert({
+    where: { userId },
+    create: {
+      userId,
+      stripeCustomerId: customerId,
+      stripeSubscriptionId: subscriptionId,
+      stripePriceId: subscription.items.data[0].price.id,
+      status: subscription.status,
+      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+    },
+    update: {
+      stripeCustomerId: customerId,
+      stripeSubscriptionId: subscriptionId,
+      stripePriceId: subscription.items.data[0].price.id,
+      status: subscription.status,
+      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+    },
+  });
+}
+
+async function handleSubscriptionChange(subscription: Stripe.Subscription) {
+  const customerId = subscription.customer as string;
+
+  // Buscar usuario por customerId
+  const existingSubscription = await db.subscription.findUnique({
+    where: { stripeCustomerId: customerId },
+  });
+
+  if (!existingSubscription) {
+    console.error("Subscription not found for customer:", customerId);
+    return;
+  }
+
+  await db.subscription.update({
+    where: { stripeCustomerId: customerId },
+    data: {
+      stripePriceId: subscription.items.data[0].price.id,
+      status: subscription.status,
+      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      cancelAtPeriodEnd: subscription.cancel_at_period_end,
+    },
+  });
+}
+
+async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
+  const customerId = subscription.customer as string;
+
+  await db.subscription.update({
+    where: { stripeCustomerId: customerId },
+    data: {
+      status: "canceled",
+      stripeSubscriptionId: null,
+    },
+  });
+}
+
+async function handlePaymentFailed(invoice: Stripe.Invoice) {
+  const customerId = invoice.customer as string;
+
+  // Notificar al usuario
+  const subscription = await db.subscription.findUnique({
+    where: { stripeCustomerId: customerId },
+    include: { user: true },
+  });
+
+  if (subscription?.user.email) {
+    // Enviar email de notificación
+    // await sendPaymentFailedEmail(subscription.user.email);
+  }
+
+  await db.subscription.update({
+    where: { stripeCustomerId: customerId },
+    data: {
+      status: "past_due",
+    },
+  });
+}
+```
+
+## Testing local
+
+Para probar webhooks en desarrollo, usa Stripe CLI:
+
+```bash
+# Instalar Stripe CLI
+brew install stripe/stripe-cli/stripe
+
+# Login
+stripe login
+
+# Escuchar eventos y reenviar a tu servidor local
+stripe listen --forward-to localhost:3000/api/stripe/webhooks
+```
+
+El CLI te dará un webhook secret temporal para usar en desarrollo.
+
+<Callout type="warn">
+  Siempre verifica la firma del webhook antes de procesar el evento. Nunca confíes en datos no verificados.
+</Callout>

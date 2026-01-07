@@ -1,0 +1,185 @@
+---
+title: Crear Tablas
+description: Define tu esquema de base de datos en Supabase
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+# Crear Tablas
+
+Puedes crear tablas desde el dashboard o usando SQL.
+
+## Desde el Dashboard
+
+1. Ve a **Table Editor** en tu dashboard
+2. Click en **New Table**
+3. Define columnas y tipos
+4. Configura claves primarias y foráneas
+
+## Usando SQL
+
+<Tabs items={['Tabla de Posts', 'Perfil de Usuario', 'Suscripciones']}>
+  <Tab value="Tabla de Posts">
+    ```sql
+    CREATE TABLE posts (
+      id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+      user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+      title TEXT NOT NULL,
+      content TEXT,
+      published BOOLEAN DEFAULT false,
+      created_at TIMESTAMPTZ DEFAULT now(),
+      updated_at TIMESTAMPTZ DEFAULT now()
+    );
+
+    -- Índice para búsquedas por usuario
+    CREATE INDEX posts_user_id_idx ON posts(user_id);
+
+    -- Habilitar RLS
+    ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
+
+    -- Políticas
+    CREATE POLICY "Users can view own posts"
+      ON posts FOR SELECT
+      USING (auth.uid() = user_id);
+
+    CREATE POLICY "Users can create posts"
+      ON posts FOR INSERT
+      WITH CHECK (auth.uid() = user_id);
+
+    CREATE POLICY "Users can update own posts"
+      ON posts FOR UPDATE
+      USING (auth.uid() = user_id);
+
+    CREATE POLICY "Users can delete own posts"
+      ON posts FOR DELETE
+      USING (auth.uid() = user_id);
+    ```
+  </Tab>
+
+  <Tab value="Perfil de Usuario">
+    ```sql
+    CREATE TABLE profiles (
+      id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+      username TEXT UNIQUE,
+      full_name TEXT,
+      avatar_url TEXT,
+      bio TEXT,
+      website TEXT,
+      created_at TIMESTAMPTZ DEFAULT now(),
+      updated_at TIMESTAMPTZ DEFAULT now()
+    );
+
+    -- RLS
+    ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+    -- Cualquiera puede ver perfiles
+    CREATE POLICY "Profiles are viewable by everyone"
+      ON profiles FOR SELECT
+      USING (true);
+
+    -- Solo el dueño puede actualizar
+    CREATE POLICY "Users can update own profile"
+      ON profiles FOR UPDATE
+      USING (auth.uid() = id);
+
+    -- Crear perfil automáticamente
+    CREATE OR REPLACE FUNCTION handle_new_user()
+    RETURNS TRIGGER AS $$
+    BEGIN
+      INSERT INTO profiles (id, full_name, avatar_url)
+      VALUES (
+        NEW.id,
+        NEW.raw_user_meta_data->>'full_name',
+        NEW.raw_user_meta_data->>'avatar_url'
+      );
+      RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+    CREATE TRIGGER on_auth_user_created
+      AFTER INSERT ON auth.users
+      FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+    ```
+  </Tab>
+
+  <Tab value="Suscripciones">
+    ```sql
+    CREATE TABLE subscriptions (
+      id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+      user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL UNIQUE,
+      stripe_customer_id TEXT UNIQUE,
+      stripe_subscription_id TEXT UNIQUE,
+      stripe_price_id TEXT,
+      status TEXT,
+      current_period_end TIMESTAMPTZ,
+      cancel_at_period_end BOOLEAN DEFAULT false,
+      created_at TIMESTAMPTZ DEFAULT now(),
+      updated_at TIMESTAMPTZ DEFAULT now()
+    );
+
+    -- RLS
+    ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
+
+    -- Solo el usuario puede ver su suscripción
+    CREATE POLICY "Users can view own subscription"
+      ON subscriptions FOR SELECT
+      USING (auth.uid() = user_id);
+    ```
+  </Tab>
+</Tabs>
+
+## Queries con relaciones
+
+```typescript
+// Join implícito
+const { data } = await supabase
+  .from("posts")
+  .select(`
+    *,
+    profiles (
+      username,
+      avatar_url
+    )
+  `)
+  .eq("published", true);
+
+// Resultado:
+// {
+//   id: "...",
+//   title: "...",
+//   profiles: {
+//     username: "john",
+//     avatar_url: "..."
+//   }
+// }
+```
+
+## Filtros avanzados
+
+```typescript
+// Múltiples condiciones
+const { data } = await supabase
+  .from("posts")
+  .select("*")
+  .eq("published", true)
+  .gte("created_at", "2024-01-01")
+  .order("created_at", { ascending: false })
+  .limit(10);
+
+// Búsqueda de texto
+const { data } = await supabase
+  .from("posts")
+  .select("*")
+  .textSearch("title", "typescript");
+
+// OR conditions
+const { data } = await supabase
+  .from("posts")
+  .select("*")
+  .or("title.ilike.%react%,content.ilike.%react%");
+```
+
+<Callout type="info">
+  Recuerda habilitar RLS en todas las tablas que contengan datos de usuarios.
+</Callout>

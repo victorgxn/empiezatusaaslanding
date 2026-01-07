@@ -1,0 +1,165 @@
+---
+title: Setup de Stripe
+description: Configura Stripe en tu proyecto
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+# Setup de Stripe
+
+Configura Stripe para aceptar pagos en tu aplicación.
+
+## Instalación
+
+<Steps>
+  <Step>
+    ### Crear cuenta de Stripe
+
+    1. Ve a [stripe.com](https://stripe.com) y crea una cuenta
+    2. Completa la verificación de tu negocio
+  </Step>
+
+  <Step>
+    ### Obtener API Keys
+
+    En el dashboard de Stripe:
+    1. Ve a **Developers > API keys**
+    2. Copia las claves de **test mode**
+
+    ```bash title=".env.local"
+    STRIPE_SECRET_KEY="sk_test_..."
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_test_..."
+    ```
+  </Step>
+
+  <Step>
+    ### Instalar SDK
+
+    ```bash
+    npm install stripe @stripe/stripe-js
+    ```
+  </Step>
+
+  <Step>
+    ### Crear cliente de Stripe
+
+    ```typescript title="lib/stripe.ts"
+    import Stripe from "stripe";
+
+    export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: "2024-12-18.acacia",
+      typescript: true,
+    });
+    ```
+
+    ```typescript title="lib/stripe-client.ts"
+    import { loadStripe } from "@stripe/stripe-js";
+
+    export const getStripe = () => {
+      return loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+    };
+    ```
+  </Step>
+</Steps>
+
+## Crear productos y precios
+
+### Desde el dashboard
+
+1. Ve a **Products** en Stripe Dashboard
+2. Click en **Add product**
+3. Define nombre, descripción e imagen
+4. Agrega precios (one-time o recurring)
+
+### Con código
+
+```typescript title="scripts/create-products.ts"
+import { stripe } from "@/lib/stripe";
+
+async function createProducts() {
+  // Crear producto
+  const product = await stripe.products.create({
+    name: "Pro Plan",
+    description: "Acceso completo a todas las funcionalidades",
+  });
+
+  // Precio mensual
+  const monthlyPrice = await stripe.prices.create({
+    product: product.id,
+    unit_amount: 2900, // $29.00
+    currency: "usd",
+    recurring: {
+      interval: "month",
+    },
+    metadata: {
+      plan: "pro",
+    },
+  });
+
+  // Precio anual (con descuento)
+  const yearlyPrice = await stripe.prices.create({
+    product: product.id,
+    unit_amount: 29000, // $290.00 (2 meses gratis)
+    currency: "usd",
+    recurring: {
+      interval: "year",
+    },
+    metadata: {
+      plan: "pro",
+    },
+  });
+
+  console.log("Product:", product.id);
+  console.log("Monthly price:", monthlyPrice.id);
+  console.log("Yearly price:", yearlyPrice.id);
+}
+
+createProducts();
+```
+
+## Configuración de precios
+
+Guarda los IDs de tus precios:
+
+```typescript title="config/stripe.ts"
+export const PLANS = {
+  starter: {
+    name: "Starter",
+    description: "Para proyectos pequeños",
+    monthlyPrice: 9,
+    yearlyPrice: 90,
+    stripePriceId: {
+      monthly: "price_xxx_monthly",
+      yearly: "price_xxx_yearly",
+    },
+    features: [
+      "5 proyectos",
+      "1,000 usuarios",
+      "Soporte por email",
+    ],
+  },
+  pro: {
+    name: "Pro",
+    description: "Para equipos en crecimiento",
+    monthlyPrice: 29,
+    yearlyPrice: 290,
+    stripePriceId: {
+      monthly: "price_yyy_monthly",
+      yearly: "price_yyy_yearly",
+    },
+    features: [
+      "Proyectos ilimitados",
+      "10,000 usuarios",
+      "Soporte prioritario",
+      "Analytics avanzados",
+    ],
+  },
+} as const;
+
+export type PlanId = keyof typeof PLANS;
+```
+
+<Callout type="warn">
+  Usa claves de test (`sk_test_`, `pk_test_`) en desarrollo. Las claves live empiezan con `sk_live_` y `pk_live_`.
+</Callout>

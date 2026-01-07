@@ -1,0 +1,149 @@
+---
+title: Sitemap
+description: Genera sitemap automáticamente
+---
+
+# Sitemap
+
+Next.js puede generar sitemaps automáticamente.
+
+## Sitemap estático
+
+```tsx title="app/sitemap.ts"
+import type { MetadataRoute } from "next";
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  return [
+    {
+      url: "https://tuapp.com",
+      lastModified: new Date(),
+      changeFrequency: "yearly",
+      priority: 1,
+    },
+    {
+      url: "https://tuapp.com/features",
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: "https://tuapp.com/pricing",
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
+      url: "https://tuapp.com/docs",
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
+  ];
+}
+```
+
+## Sitemap dinámico
+
+```tsx title="app/sitemap.ts"
+import type { MetadataRoute } from "next";
+import { db } from "@/lib/db";
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = "https://tuapp.com";
+
+  // Páginas estáticas
+  const staticPages: MetadataRoute.Sitemap = [
+    {
+      url: baseUrl,
+      lastModified: new Date(),
+      changeFrequency: "yearly",
+      priority: 1,
+    },
+    {
+      url: `${baseUrl}/pricing`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+  ];
+
+  // Páginas de blog dinámicas
+  const posts = await db.post.findMany({
+    where: { published: true },
+    select: { slug: true, updatedAt: true },
+  });
+
+  const blogPages: MetadataRoute.Sitemap = posts.map((post) => ({
+    url: `${baseUrl}/blog/${post.slug}`,
+    lastModified: post.updatedAt,
+    changeFrequency: "weekly",
+    priority: 0.6,
+  }));
+
+  return [...staticPages, ...blogPages];
+}
+```
+
+## Robots.txt
+
+```tsx title="app/robots.ts"
+import type { MetadataRoute } from "next";
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: {
+      userAgent: "*",
+      allow: "/",
+      disallow: ["/api/", "/dashboard/", "/admin/"],
+    },
+    sitemap: "https://tuapp.com/sitemap.xml",
+  };
+}
+```
+
+## Múltiples sitemaps
+
+Para sitios grandes, divide en múltiples sitemaps:
+
+```tsx title="app/sitemap.ts"
+import type { MetadataRoute } from "next";
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  return [
+    {
+      url: "https://tuapp.com/sitemap-pages.xml",
+    },
+    {
+      url: "https://tuapp.com/sitemap-blog.xml",
+    },
+    {
+      url: "https://tuapp.com/sitemap-docs.xml",
+    },
+  ];
+}
+```
+
+```tsx title="app/sitemap-blog.xml/route.ts"
+export async function GET() {
+  const posts = await getPosts();
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  ${posts
+    .map(
+      (post) => `
+  <url>
+    <loc>https://tuapp.com/blog/${post.slug}</loc>
+    <lastmod>${post.updatedAt.toISOString()}</lastmod>
+  </url>`
+    )
+    .join("")}
+</urlset>`;
+
+  return new Response(xml, {
+    headers: {
+      "Content-Type": "application/xml",
+    },
+  });
+}
+```

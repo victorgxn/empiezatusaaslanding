@@ -1,0 +1,269 @@
+---
+title: Prisma ORM
+description: Aprende a usar Prisma para interactuar con tu base de datos
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Prisma ORM
+
+Prisma es un ORM moderno que hace que trabajar con bases de datos sea seguro y agradable.
+
+## Queries básicas
+
+### Crear registros
+
+```typescript
+import { db } from "@/lib/db";
+
+// Crear un usuario
+const user = await db.user.create({
+  data: {
+    email: "user@example.com",
+    name: "John Doe",
+  },
+});
+
+// Crear con relaciones
+const post = await db.post.create({
+  data: {
+    title: "Mi primer post",
+    content: "Contenido del post",
+    author: {
+      connect: { id: user.id },
+    },
+  },
+});
+```
+
+### Leer registros
+
+```typescript
+// Obtener uno por ID
+const user = await db.user.findUnique({
+  where: { id: "user-id" },
+});
+
+// Obtener uno por campo único
+const user = await db.user.findUnique({
+  where: { email: "user@example.com" },
+});
+
+// Obtener varios con filtros
+const posts = await db.post.findMany({
+  where: {
+    published: true,
+    author: {
+      email: "user@example.com",
+    },
+  },
+  orderBy: {
+    createdAt: "desc",
+  },
+  take: 10,
+});
+
+// Con relaciones
+const userWithPosts = await db.user.findUnique({
+  where: { id: "user-id" },
+  include: {
+    posts: true,
+    subscription: true,
+  },
+});
+```
+
+### Actualizar registros
+
+```typescript
+// Actualizar uno
+const user = await db.user.update({
+  where: { id: "user-id" },
+  data: {
+    name: "Nuevo nombre",
+  },
+});
+
+// Actualizar varios
+const result = await db.post.updateMany({
+  where: {
+    authorId: "user-id",
+    published: false,
+  },
+  data: {
+    published: true,
+  },
+});
+
+// Upsert (crear o actualizar)
+const user = await db.user.upsert({
+  where: { email: "user@example.com" },
+  update: { name: "Nombre actualizado" },
+  create: { email: "user@example.com", name: "Nuevo usuario" },
+});
+```
+
+### Eliminar registros
+
+```typescript
+// Eliminar uno
+await db.post.delete({
+  where: { id: "post-id" },
+});
+
+// Eliminar varios
+await db.post.deleteMany({
+  where: {
+    authorId: "user-id",
+  },
+});
+```
+
+## Queries avanzadas
+
+### Filtros complejos
+
+```typescript
+const posts = await db.post.findMany({
+  where: {
+    OR: [
+      { title: { contains: "typescript" } },
+      { content: { contains: "typescript" } },
+    ],
+    AND: {
+      published: true,
+      createdAt: {
+        gte: new Date("2024-01-01"),
+      },
+    },
+  },
+});
+```
+
+### Agregaciones
+
+```typescript
+// Contar
+const count = await db.post.count({
+  where: { published: true },
+});
+
+// Agrupar
+const postsByAuthor = await db.post.groupBy({
+  by: ["authorId"],
+  _count: {
+    id: true,
+  },
+  orderBy: {
+    _count: {
+      id: "desc",
+    },
+  },
+});
+```
+
+### Transacciones
+
+```typescript
+// Transacción interactiva
+const result = await db.$transaction(async (tx) => {
+  const user = await tx.user.create({
+    data: { email: "user@example.com" },
+  });
+
+  const post = await tx.post.create({
+    data: {
+      title: "Post inicial",
+      authorId: user.id,
+    },
+  });
+
+  return { user, post };
+});
+
+// Transacción batch
+const [user, posts] = await db.$transaction([
+  db.user.findUnique({ where: { id: "user-id" } }),
+  db.post.findMany({ where: { authorId: "user-id" } }),
+]);
+```
+
+## Uso en Next.js
+
+### Server Component
+
+```tsx title="app/posts/page.tsx"
+import { db } from "@/lib/db";
+
+export default async function PostsPage() {
+  const posts = await db.post.findMany({
+    where: { published: true },
+    include: { author: true },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return (
+    <div>
+      {posts.map((post) => (
+        <article key={post.id}>
+          <h2>{post.title}</h2>
+          <p>Por {post.author.name}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
+```
+
+### Server Action
+
+```typescript title="app/posts/actions.ts"
+"use server";
+
+import { db } from "@/lib/db";
+import { revalidatePath } from "next/cache";
+
+export async function createPost(formData: FormData) {
+  const title = formData.get("title") as string;
+  const content = formData.get("content") as string;
+  const authorId = formData.get("authorId") as string;
+
+  await db.post.create({
+    data: {
+      title,
+      content,
+      authorId,
+    },
+  });
+
+  revalidatePath("/posts");
+}
+```
+
+### API Route
+
+```typescript title="app/api/posts/route.ts"
+import { db } from "@/lib/db";
+
+export async function GET() {
+  const posts = await db.post.findMany({
+    where: { published: true },
+  });
+
+  return Response.json(posts);
+}
+
+export async function POST(request: Request) {
+  const data = await request.json();
+
+  const post = await db.post.create({
+    data,
+  });
+
+  return Response.json(post, { status: 201 });
+}
+```
+
+<Callout type="info">
+  Prisma genera tipos TypeScript automáticamente. Tu IDE te mostrará autocompletado para todos los campos y relaciones.
+</Callout>

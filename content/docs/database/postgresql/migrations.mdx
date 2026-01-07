@@ -1,0 +1,216 @@
+---
+title: Migraciones
+description: Gestiona cambios en tu esquema de base de datos
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Migraciones
+
+Las migraciones te permiten versionar y gestionar cambios en tu esquema de base de datos.
+
+## Flujo de trabajo
+
+### 1. Modificar el schema
+
+Edita `prisma/schema.prisma`:
+
+```prisma
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  image     String?
+  role      String   @default("user") // Nuevo campo
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+```
+
+### 2. Crear migración
+
+```bash
+npx prisma migrate dev --name add_user_role
+```
+
+Esto:
+1. Crea un archivo SQL en `prisma/migrations/`
+2. Aplica la migración a la base de datos
+3. Regenera el cliente Prisma
+
+### 3. Verificar
+
+```bash
+npx prisma studio
+```
+
+## Comandos útiles
+
+| Comando | Descripción |
+|---------|-------------|
+| `prisma migrate dev` | Crear y aplicar migración (desarrollo) |
+| `prisma migrate deploy` | Aplicar migraciones pendientes (producción) |
+| `prisma migrate reset` | Resetear base de datos y re-aplicar todo |
+| `prisma migrate status` | Ver estado de migraciones |
+| `prisma db push` | Sincronizar schema sin crear migración |
+| `prisma generate` | Regenerar cliente Prisma |
+
+## Desarrollo vs Producción
+
+### Desarrollo
+
+```bash
+# Crear migración con nombre descriptivo
+npx prisma migrate dev --name add_posts_table
+
+# Resetear si algo sale mal
+npx prisma migrate reset
+```
+
+### Producción
+
+```bash
+# Solo aplicar migraciones existentes
+npx prisma migrate deploy
+```
+
+<Callout type="warn">
+  Nunca uses `migrate dev` o `migrate reset` en producción. Estos comandos pueden eliminar datos.
+</Callout>
+
+## Migraciones comunes
+
+### Agregar campo obligatorio
+
+Si agregas un campo obligatorio a una tabla con datos:
+
+```prisma
+model User {
+  // ...
+  phone String // Nuevo campo obligatorio
+}
+```
+
+Prisma te pedirá un valor por defecto o que sea opcional:
+
+**Opción 1: Valor por defecto**
+```prisma
+phone String @default("")
+```
+
+**Opción 2: Hacerlo opcional**
+```prisma
+phone String?
+```
+
+**Opción 3: Migración en dos pasos**
+1. Agregar como opcional
+2. Migrar datos
+3. Hacerlo obligatorio
+
+### Renombrar campo
+
+Prisma no detecta renombres automáticamente. Debes:
+
+1. Agregar el nuevo campo
+2. Migrar datos manualmente
+3. Eliminar el campo antiguo
+
+```sql title="prisma/migrations/xxx_rename_field/migration.sql"
+-- Agregar nuevo campo
+ALTER TABLE "User" ADD COLUMN "fullName" TEXT;
+
+-- Copiar datos
+UPDATE "User" SET "fullName" = "name";
+
+-- Eliminar campo antiguo
+ALTER TABLE "User" DROP COLUMN "name";
+```
+
+### Agregar índice
+
+```prisma
+model Post {
+  id        String @id @default(cuid())
+  title     String
+  authorId  String
+
+  @@index([authorId])
+  @@index([title])
+}
+```
+
+## Migraciones personalizadas
+
+Puedes editar el SQL generado antes de aplicarlo:
+
+```bash
+npx prisma migrate dev --name custom_migration --create-only
+```
+
+Esto crea la migración sin aplicarla. Edita el SQL y luego:
+
+```bash
+npx prisma migrate dev
+```
+
+## Seeding
+
+Crea datos iniciales con un script de seed:
+
+```typescript title="prisma/seed.ts"
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+async function main() {
+  // Crear usuario admin
+  await prisma.user.upsert({
+    where: { email: "admin@example.com" },
+    update: {},
+    create: {
+      email: "admin@example.com",
+      name: "Admin",
+      role: "admin",
+    },
+  });
+
+  // Crear posts de ejemplo
+  await prisma.post.createMany({
+    data: [
+      { title: "Post 1", authorId: "...", published: true },
+      { title: "Post 2", authorId: "...", published: true },
+    ],
+    skipDuplicates: true,
+  });
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
+```
+
+Agrega al `package.json`:
+
+```json
+{
+  "prisma": {
+    "seed": "npx tsx prisma/seed.ts"
+  }
+}
+```
+
+Ejecutar seed:
+
+```bash
+npx prisma db seed
+```
+
+<Callout type="info">
+  El seed se ejecuta automáticamente después de `prisma migrate reset`.
+</Callout>

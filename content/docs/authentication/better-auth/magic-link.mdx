@@ -1,0 +1,276 @@
+---
+title: Magic Links
+description: Implementa autenticación sin contraseña con enlaces mágicos
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+# Magic Links
+
+Los magic links permiten a los usuarios iniciar sesión sin contraseña, solo con su email.
+
+## Cómo funciona
+
+1. El usuario ingresa su email
+2. Recibe un enlace único por email
+3. Al hacer click, inicia sesión automáticamente
+4. El enlace expira después de un tiempo
+
+## Instalación del plugin
+
+```bash
+npm install better-auth
+```
+
+El plugin de magic link viene incluido en Better Auth.
+
+## Configuración
+
+<Steps>
+  <Step>
+    ### Habilitar el plugin
+
+    ```typescript title="lib/auth.ts"
+    import { betterAuth } from "better-auth";
+    import { magicLink } from "better-auth/plugins";
+
+    export const auth = betterAuth({
+      // ... otras opciones
+      plugins: [
+        magicLink({
+          sendMagicLink: async ({ email, url }) => {
+            // Enviar email con el magic link
+            await sendEmail({
+              to: email,
+              subject: "Tu enlace de acceso",
+              html: `
+                <h1>Inicia sesión</h1>
+                <p>Haz click en el siguiente enlace para acceder:</p>
+                <a href="${url}">Iniciar sesión</a>
+                <p>Este enlace expira en 15 minutos.</p>
+              `,
+            });
+          },
+          expiresIn: 60 * 15, // 15 minutos
+        }),
+      ],
+    });
+    ```
+  </Step>
+
+  <Step>
+    ### Actualizar el cliente
+
+    ```typescript title="lib/auth-client.ts"
+    import { createAuthClient } from "better-auth/react";
+    import { magicLinkClient } from "better-auth/client/plugins";
+
+    export const authClient = createAuthClient({
+      baseURL: process.env.NEXT_PUBLIC_APP_URL,
+      plugins: [magicLinkClient()],
+    });
+    ```
+  </Step>
+</Steps>
+
+## Formulario de Magic Link
+
+```tsx title="components/auth/magic-link-form.tsx"
+"use client";
+
+import { useState } from "react";
+import { authClient } from "@/lib/auth-client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+export function MagicLinkForm() {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    await authClient.signIn.magicLink({
+      email,
+      callbackURL: "/dashboard",
+    });
+
+    setSent(true);
+    setLoading(false);
+  };
+
+  if (sent) {
+    return (
+      <div className="text-center space-y-4">
+        <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
+          <svg
+            className="w-8 h-8 text-green-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+        </div>
+        <h2 className="text-xl font-semibold">Revisa tu email</h2>
+        <p className="text-muted-foreground">
+          Hemos enviado un enlace de acceso a <strong>{email}</strong>
+        </p>
+        <p className="text-sm text-muted-foreground">
+          El enlace expira en 15 minutos
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <label htmlFor="email" className="text-sm font-medium">
+          Email
+        </label>
+        <Input
+          id="email"
+          type="email"
+          placeholder="tu@email.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+      </div>
+
+      <Button type="submit" disabled={loading} className="w-full">
+        {loading ? "Enviando..." : "Enviar enlace de acceso"}
+      </Button>
+    </form>
+  );
+}
+```
+
+## Template de email con React Email
+
+```tsx title="emails/magic-link.tsx"
+import {
+  Body,
+  Button,
+  Container,
+  Head,
+  Heading,
+  Html,
+  Link,
+  Preview,
+  Text,
+} from "@react-email/components";
+
+interface MagicLinkEmailProps {
+  url: string;
+}
+
+export function MagicLinkEmail({ url }: MagicLinkEmailProps) {
+  return (
+    <Html>
+      <Head />
+      <Preview>Tu enlace de acceso a EmpiezaTuSaaS</Preview>
+      <Body style={main}>
+        <Container style={container}>
+          <Heading style={h1}>Inicia sesión</Heading>
+          <Text style={text}>
+            Haz click en el botón de abajo para acceder a tu cuenta:
+          </Text>
+          <Button style={button} href={url}>
+            Iniciar sesión
+          </Button>
+          <Text style={text}>
+            O copia y pega este enlace en tu navegador:
+          </Text>
+          <Link href={url} style={link}>
+            {url}
+          </Link>
+          <Text style={footer}>
+            Este enlace expira en 15 minutos. Si no solicitaste este email,
+            puedes ignorarlo.
+          </Text>
+        </Container>
+      </Body>
+    </Html>
+  );
+}
+
+const main = {
+  backgroundColor: "#f6f9fc",
+  fontFamily: "sans-serif",
+};
+
+const container = {
+  backgroundColor: "#ffffff",
+  margin: "0 auto",
+  padding: "40px",
+  borderRadius: "8px",
+};
+
+const h1 = {
+  color: "#333",
+  fontSize: "24px",
+};
+
+const text = {
+  color: "#555",
+  fontSize: "16px",
+};
+
+const button = {
+  backgroundColor: "#000",
+  borderRadius: "8px",
+  color: "#fff",
+  fontSize: "16px",
+  padding: "12px 24px",
+  textDecoration: "none",
+};
+
+const link = {
+  color: "#0070f3",
+  fontSize: "14px",
+};
+
+const footer = {
+  color: "#999",
+  fontSize: "12px",
+  marginTop: "40px",
+};
+```
+
+## Usar con Resend
+
+```typescript title="lib/auth.ts"
+import { Resend } from "resend";
+import { MagicLinkEmail } from "@/emails/magic-link";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+export const auth = betterAuth({
+  plugins: [
+    magicLink({
+      sendMagicLink: async ({ email, url }) => {
+        await resend.emails.send({
+          from: "EmpiezaTuSaaS <noreply@tudominio.com>",
+          to: email,
+          subject: "Tu enlace de acceso",
+          react: MagicLinkEmail({ url }),
+        });
+      },
+    }),
+  ],
+});
+```
+
+<Callout type="info">
+  Los magic links son una excelente opción para reducir fricción en el registro y mejorar la seguridad al eliminar contraseñas.
+</Callout>

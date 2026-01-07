@@ -1,0 +1,152 @@
+---
+title: Botones
+description: Variantes y estilos de botones
+---
+
+# Botones
+
+El componente Button incluye múltiples variantes para diferentes casos de uso.
+
+## Variantes
+
+```tsx
+import { Button } from "@/components/ui/button";
+
+// Default - acción principal
+<Button>Guardar cambios</Button>
+
+// Secondary - acción secundaria
+<Button variant="secondary">Cancelar</Button>
+
+// Destructive - acciones peligrosas
+<Button variant="destructive">Eliminar</Button>
+
+// Outline - estilo con borde
+<Button variant="outline">Ver más</Button>
+
+// Ghost - solo texto
+<Button variant="ghost">Cerrar</Button>
+
+// Link - como enlace
+<Button variant="link">Leer más</Button>
+```
+
+## Tamaños
+
+```tsx
+<Button size="sm">Pequeño</Button>
+<Button size="default">Normal</Button>
+<Button size="lg">Grande</Button>
+<Button size="icon">
+  <Plus className="w-4 h-4" />
+</Button>
+```
+
+## Con iconos
+
+```tsx
+import { Loader2, Plus, ArrowRight } from "lucide-react";
+
+// Icono a la izquierda
+<Button>
+  <Plus className="w-4 h-4 mr-2" />
+  Agregar
+</Button>
+
+// Icono a la derecha
+<Button>
+  Continuar
+  <ArrowRight className="w-4 h-4 ml-2" />
+</Button>
+
+// Estado de carga
+<Button disabled>
+  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+  Guardando...
+</Button>
+```
+
+## Como enlace
+
+```tsx
+import Link from "next/link";
+
+<Button asChild>
+  <Link href="/dashboard">Ir al dashboard</Link>
+</Button>
+```
+
+## Personalización
+
+El componente usa `class-variance-authority` para las variantes:
+
+```tsx title="components/ui/button.tsx"
+import { cva, type VariantProps } from "class-variance-authority";
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        outline: "border border-input bg-background hover:bg-accent",
+        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "hover:bg-accent hover:text-accent-foreground",
+        link: "text-primary underline-offset-4 hover:underline",
+      },
+      size: {
+        default: "h-10 px-4 py-2",
+        sm: "h-9 rounded-md px-3",
+        lg: "h-11 rounded-md px-8",
+        icon: "h-10 w-10",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+);
+```
+
+## Botón de checkout
+
+```tsx title="components/checkout-button.tsx"
+"use client";
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+
+export function CheckoutButton({ priceId }: { priceId: string }) {
+  const [loading, setLoading] = useState(false);
+
+  const handleClick = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        body: JSON.stringify({ priceId }),
+      });
+      const { url } = await res.json();
+      window.location.href = url;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Button onClick={handleClick} disabled={loading} className="w-full">
+      {loading ? (
+        <>
+          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          Procesando...
+        </>
+      ) : (
+        "Comenzar ahora"
+      )}
+    </Button>
+  );
+}
+```

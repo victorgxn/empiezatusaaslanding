@@ -1,0 +1,93 @@
+---
+title: Autenticación
+description: Compara las opciones de autenticación disponibles en EmpiezaTuSaaS
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Shield, Server } from 'lucide-react';
+
+# Autenticación
+
+EmpiezaTuSaaS ofrece dos opciones de autenticación para adaptarse a diferentes necesidades y preferencias.
+
+## Comparativa
+
+| Característica | Better Auth | Supabase Auth |
+|----------------|-------------|---------------|
+| **Setup** | Medio | Rápido |
+| **Control** | Total | Limitado |
+| **Vendor lock-in** | Ninguno | Moderado |
+| **Social login** | Config manual | Dashboard UI |
+| **Magic links** | Plugin | Incluido |
+| **2FA** | Plugin | Incluido |
+| **Row Level Security** | Manual | Incluido |
+| **Costo** | Solo DB | Gratis hasta límites |
+
+## Elige tu camino
+
+<Cards>
+  <Card
+    icon={<Shield className="w-6 h-6" />}
+    title="Better Auth + PostgreSQL"
+    description="Control total sobre tu autenticación. Ideal para proyectos que requieren máxima personalización y cero vendor lock-in."
+    href="/docs/authentication/better-auth"
+  />
+  <Card
+    icon={<Server className="w-6 h-6" />}
+    title="Supabase Auth"
+    description="Setup rápido con UI incluida. Ideal para MVPs y proyectos que quieren velocidad de desarrollo."
+    href="/docs/authentication/supabase"
+  />
+</Cards>
+
+## Cuándo elegir cada opción
+
+### Elige Better Auth si:
+
+- Quieres control total sobre la autenticación
+- Necesitas personalización avanzada
+- Prefieres evitar vendor lock-in
+- Ya tienes una base de datos PostgreSQL
+- Necesitas compliance específico (GDPR, etc.)
+
+### Elige Supabase si:
+
+- Quieres el setup más rápido posible
+- Prefieres una UI para gestionar usuarios
+- Necesitas storage y realtime además de auth
+- Estás construyendo un MVP
+- No quieres gestionar infraestructura
+
+<Callout type="info">
+  Puedes cambiar de una opción a otra más adelante, aunque requiere migración de datos.
+</Callout>
+
+## Funcionalidades incluidas
+
+Ambas opciones incluyen:
+
+- Email y password
+- Social login (Google, GitHub, etc.)
+- Magic links
+- Verificación de email
+- Recuperación de contraseña
+- Sesiones seguras
+- Protección CSRF
+
+### Funcionalidades adicionales con plugins
+
+Better Auth soporta plugins para:
+
+- Two-Factor Authentication (2FA)
+- Passkeys
+- Username auth
+- Phone/SMS auth
+- Organizaciones y equipos
+
+### Funcionalidades adicionales en Supabase
+
+- Row Level Security (RLS)
+- Hooks de autenticación
+- Edge Functions
+- Integración con Storage

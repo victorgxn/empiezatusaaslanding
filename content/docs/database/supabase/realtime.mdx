@@ -1,0 +1,229 @@
+---
+title: Realtime
+description: Suscríbete a cambios en tiempo real con Supabase
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Realtime
+
+Supabase Realtime te permite suscribirte a cambios en tu base de datos y recibir actualizaciones instantáneas.
+
+## Habilitar Realtime
+
+En el dashboard de Supabase:
+1. Ve a **Database > Replication**
+2. Activa las tablas que quieres observar
+
+O con SQL:
+
+```sql
+ALTER PUBLICATION supabase_realtime ADD TABLE posts;
+```
+
+## Suscribirse a cambios
+
+```tsx title="components/realtime-posts.tsx"
+"use client";
+
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
+
+interface Post {
+  id: string;
+  title: string;
+  content: string;
+}
+
+export function RealtimePosts({ initialPosts }: { initialPosts: Post[] }) {
+  const [posts, setPosts] = useState(initialPosts);
+  const supabase = createClient();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("posts-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*", // INSERT, UPDATE, DELETE
+          schema: "public",
+          table: "posts",
+        },
+        (payload: RealtimePostgresChangesPayload<Post>) => {
+          if (payload.eventType === "INSERT") {
+            setPosts((prev) => [payload.new as Post, ...prev]);
+          } else if (payload.eventType === "UPDATE") {
+            setPosts((prev) =>
+              prev.map((post) =>
+                post.id === (payload.new as Post).id
+                  ? (payload.new as Post)
+                  : post
+              )
+            );
+          } else if (payload.eventType === "DELETE") {
+            setPosts((prev) =>
+              prev.filter((post) => post.id !== payload.old.id)
+            );
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase]);
+
+  return (
+    <div className="space-y-4">
+      {posts.map((post) => (
+        <article key={post.id} className="p-4 border rounded">
+          <h2 className="font-bold">{post.title}</h2>
+          <p>{post.content}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
+```
+
+## Filtrar cambios
+
+```typescript
+// Solo cambios de un usuario específico
+const channel = supabase
+  .channel("user-posts")
+  .on(
+    "postgres_changes",
+    {
+      event: "*",
+      schema: "public",
+      table: "posts",
+      filter: `user_id=eq.${userId}`,
+    },
+    (payload) => {
+      // Manejar cambios
+    }
+  )
+  .subscribe();
+```
+
+## Eventos específicos
+
+```typescript
+// Solo inserciones
+.on(
+  "postgres_changes",
+  { event: "INSERT", schema: "public", table: "posts" },
+  handleInsert
+)
+
+// Solo actualizaciones
+.on(
+  "postgres_changes",
+  { event: "UPDATE", schema: "public", table: "posts" },
+  handleUpdate
+)
+
+// Solo eliminaciones
+.on(
+  "postgres_changes",
+  { event: "DELETE", schema: "public", table: "posts" },
+  handleDelete
+)
+```
+
+## Presence (usuarios online)
+
+```tsx title="components/online-users.tsx"
+"use client";
+
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+
+interface UserPresence {
+  id: string;
+  name: string;
+  online_at: string;
+}
+
+export function OnlineUsers({ roomId, userId, userName }: {
+  roomId: string;
+  userId: string;
+  userName: string;
+}) {
+  const [onlineUsers, setOnlineUsers] = useState<UserPresence[]>([]);
+  const supabase = createClient();
+
+  useEffect(() => {
+    const channel = supabase.channel(`room:${roomId}`);
+
+    channel
+      .on("presence", { event: "sync" }, () => {
+        const state = channel.presenceState<UserPresence>();
+        const users = Object.values(state).flat();
+        setOnlineUsers(users);
+      })
+      .subscribe(async (status) => {
+        if (status === "SUBSCRIBED") {
+          await channel.track({
+            id: userId,
+            name: userName,
+            online_at: new Date().toISOString(),
+          });
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [roomId, userId, userName, supabase]);
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-sm text-muted-foreground">
+        {onlineUsers.length} usuarios online
+      </span>
+      <div className="flex -space-x-2">
+        {onlineUsers.slice(0, 5).map((user) => (
+          <div
+            key={user.id}
+            className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-xs text-white"
+            title={user.name}
+          >
+            {user.name[0]}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+## Broadcast (mensajes)
+
+```typescript
+// Enviar mensaje
+const channel = supabase.channel("chat-room");
+
+channel.send({
+  type: "broadcast",
+  event: "message",
+  payload: {
+    user: "John",
+    text: "Hola a todos!",
+  },
+});
+
+// Recibir mensajes
+channel
+  .on("broadcast", { event: "message" }, ({ payload }) => {
+    console.log(payload.user, payload.text);
+  })
+  .subscribe();
+```
+
+<Callout type="info">
+  Realtime tiene límites en el plan gratuito: 200 conexiones simultáneas y 2GB de bandwidth.
+</Callout>

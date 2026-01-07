@@ -1,0 +1,4 @@
+{
+  "title": "Autenticación",
+  "pages": ["index", "better-auth", "supabase"]
+}

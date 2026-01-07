@@ -1,0 +1,4 @@
+{
+  "title": "Pagos",
+  "pages": ["index", "stripe-setup", "checkout", "subscriptions", "webhooks", "customer-portal"]
+}
