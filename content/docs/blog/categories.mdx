@@ -1,0 +1,549 @@
+---
+title: Categorías y Tags
+description: Organiza tu contenido con categorías y tags para mejor navegación y SEO
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Files, File, Folder } from 'fumadocs-ui/components/files';
+
+# Categorías y Tags
+
+Organiza tu blog con categorías y tags para mejorar la experiencia del usuario y el SEO.
+
+## Diferencia entre categorías y tags
+
+| Aspecto | Categorías | Tags |
+|---------|------------|------|
+| **Propósito** | Clasificación principal | Palabras clave relacionadas |
+| **Cantidad por post** | 1 (exclusiva) | Múltiples |
+| **Estructura** | Jerárquica | Plana |
+| **Ejemplo** | "Tutoriales", "Noticias" | "nextjs", "react", "typescript" |
+| **SEO** | Páginas de categoría | Páginas de tag (opcional) |
+
+<Callout type="info">
+  Un post pertenece a **una sola categoría** pero puede tener **múltiples tags**.
+  Esto mantiene la organización clara y evita confusión.
+</Callout>
+
+## Estructura de archivos
+
+<Files>
+  <Folder name="app" defaultOpen>
+    <Folder name="blog" defaultOpen>
+      <Folder name="category" defaultOpen>
+        <Folder name="[category]">
+          <File name="page.tsx" />
+        </Folder>
+      </Folder>
+      <Folder name="tag">
+        <Folder name="[tag]">
+          <File name="page.tsx" />
+        </Folder>
+      </Folder>
+    </Folder>
+  </Folder>
+  <Folder name="lib">
+    <File name="blog.ts" />
+  </Folder>
+  <Folder name="config">
+    <File name="categories.ts" />
+  </Folder>
+</Files>
+
+## Definir categorías
+
+Crea un archivo de configuración para tus categorías:
+
+```typescript title="config/categories.ts"
+export interface Category {
+  name: string;
+  slug: string;
+  description: string;
+  color: string; // Para badges y styling
+  icon?: string; // Emoji o nombre de icono
+}
+
+export const categories: Category[] = [
+  {
+    name: 'Tutoriales',
+    slug: 'tutoriales',
+    description: 'Guías paso a paso para implementar funcionalidades',
+    color: 'bg-blue-500',
+    icon: '📚',
+  },
+  {
+    name: 'Noticias',
+    slug: 'noticias',
+    description: 'Últimas novedades y actualizaciones',
+    color: 'bg-green-500',
+    icon: '📰',
+  },
+  {
+    name: 'Casos de estudio',
+    slug: 'casos-de-estudio',
+    description: 'Análisis de proyectos y decisiones técnicas',
+    color: 'bg-purple-500',
+    icon: '🔍',
+  },
+  {
+    name: 'Recursos',
+    slug: 'recursos',
+    description: 'Herramientas, librerías y recursos útiles',
+    color: 'bg-orange-500',
+    icon: '🛠️',
+  },
+  {
+    name: 'Opinión',
+    slug: 'opinion',
+    description: 'Reflexiones sobre desarrollo y emprendimiento',
+    color: 'bg-pink-500',
+    icon: '💭',
+  },
+];
+
+// Helper para obtener categoría por slug
+export function getCategoryBySlug(slug: string): Category | undefined {
+  return categories.find((cat) => cat.slug === slug);
+}
+
+// Helper para obtener todas las categorías con conteo
+export function getCategoriesWithCount(posts: { category: string }[]): (Category & { count: number })[] {
+  return categories.map((category) => ({
+    ...category,
+    count: posts.filter((post) => post.category === category.slug).length,
+  }));
+}
+```
+
+## Página de categoría
+
+```typescript title="app/blog/category/[category]/page.tsx"
+import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import { getPostsByCategory, getAllCategories } from '@/lib/blog';
+import { getCategoryBySlug, categories } from '@/config/categories';
+import { PostCard } from '@/components/blog/post-card';
+import { ArrowLeft } from 'lucide-react';
+
+interface Props {
+  params: Promise<{ category: string }>;
+}
+
+// Genera rutas estáticas para todas las categorías
+export async function generateStaticParams() {
+  return categories.map((category) => ({
+    category: category.slug,
+  }));
+}
+
+// Genera metadata dinámico
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { category: slug } = await params;
+  const category = getCategoryBySlug(slug);
+
+  if (!category) return { title: 'Categoría no encontrada' };
+
+  return {
+    title: `${category.name} | Blog`,
+    description: category.description,
+    openGraph: {
+      title: `${category.name} | Blog`,
+      description: category.description,
+      type: 'website',
+    },
+  };
+}
+
+export default async function CategoryPage({ params }: Props) {
+  const { category: slug } = await params;
+  const category = getCategoryBySlug(slug);
+
+  if (!category) notFound();
+
+  const posts = getPostsByCategory(slug);
+  const allCategories = getAllCategories();
+
+  return (
+    <main className="container mx-auto px-4 py-12">
+      {/* Header */}
+      <div className="mb-12">
+        <Link
+          href="/blog"
+          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Volver al blog
+        </Link>
+
+        <div className="flex items-center gap-4 mb-4">
+          <span className="text-4xl">{category.icon}</span>
+          <h1 className="text-4xl font-bold">{category.name}</h1>
+        </div>
+        <p className="text-lg text-muted-foreground max-w-2xl">
+          {category.description}
+        </p>
+        <p className="text-sm text-muted-foreground mt-2">
+          {posts.length} {posts.length === 1 ? 'artículo' : 'artículos'}
+        </p>
+      </div>
+
+      {/* Otras categorías */}
+      <div className="flex flex-wrap gap-2 mb-12">
+        {allCategories.map((cat) => (
+          <Link
+            key={cat.slug}
+            href={`/blog/category/${cat.slug}`}
+            className={`px-4 py-2 rounded-full text-sm transition-colors ${
+              cat.slug === slug
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground'
+            }`}
+          >
+            {cat.name} ({cat.count})
+          </Link>
+        ))}
+      </div>
+
+      {/* Grid de posts */}
+      {posts.length > 0 ? (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {posts.map((post) => (
+            <PostCard key={post.slug} post={post} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">
+            No hay artículos en esta categoría todavía.
+          </p>
+          <Link href="/blog" className="text-primary hover:underline mt-4 inline-block">
+            Ver todos los artículos
+          </Link>
+        </div>
+      )}
+    </main>
+  );
+}
+```
+
+## Página de tag
+
+```typescript title="app/blog/tag/[tag]/page.tsx"
+import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import { getPostsByTag, getAllTags } from '@/lib/blog';
+import { PostCard } from '@/components/blog/post-card';
+import { ArrowLeft, Tag } from 'lucide-react';
+
+interface Props {
+  params: Promise<{ tag: string }>;
+}
+
+// Genera rutas estáticas para todos los tags
+export async function generateStaticParams() {
+  const tags = getAllTags();
+  return tags.map((tag) => ({ tag }));
+}
+
+// Genera metadata dinámico
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { tag } = await params;
+
+  return {
+    title: `#${tag} | Blog`,
+    description: `Artículos etiquetados con #${tag}`,
+    openGraph: {
+      title: `#${tag} | Blog`,
+      description: `Artículos etiquetados con #${tag}`,
+      type: 'website',
+    },
+  };
+}
+
+export default async function TagPage({ params }: Props) {
+  const { tag } = await params;
+  const posts = getPostsByTag(tag);
+
+  if (posts.length === 0) notFound();
+
+  const allTags = getAllTags();
+
+  return (
+    <main className="container mx-auto px-4 py-12">
+      {/* Header */}
+      <div className="mb-12">
+        <Link
+          href="/blog"
+          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Volver al blog
+        </Link>
+
+        <div className="flex items-center gap-3 mb-4">
+          <Tag className="w-8 h-8 text-primary" />
+          <h1 className="text-4xl font-bold">#{tag}</h1>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          {posts.length} {posts.length === 1 ? 'artículo' : 'artículos'} con este tag
+        </p>
+      </div>
+
+      {/* Todos los tags */}
+      <div className="mb-12">
+        <h2 className="text-sm font-semibold text-muted-foreground mb-4">
+          Todos los tags
+        </h2>
+        <div className="flex flex-wrap gap-2">
+          {allTags.map((t) => (
+            <Link
+              key={t}
+              href={`/blog/tag/${t}`}
+              className={`px-3 py-1 rounded-full text-sm transition-colors ${
+                t === tag
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground'
+              }`}
+            >
+              #{t}
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* Grid de posts */}
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {posts.map((post) => (
+          <PostCard key={post.slug} post={post} />
+        ))}
+      </div>
+    </main>
+  );
+}
+```
+
+## Componente CategoryBadge
+
+```typescript title="components/blog/category-badge.tsx"
+import Link from 'next/link';
+import { getCategoryBySlug } from '@/config/categories';
+
+interface CategoryBadgeProps {
+  category: string;
+  size?: 'sm' | 'md' | 'lg';
+  showIcon?: boolean;
+}
+
+export function CategoryBadge({
+  category,
+  size = 'md',
+  showIcon = true,
+}: CategoryBadgeProps) {
+  const cat = getCategoryBySlug(category);
+
+  const sizeClasses = {
+    sm: 'text-xs px-2 py-0.5',
+    md: 'text-sm px-3 py-1',
+    lg: 'text-base px-4 py-2',
+  };
+
+  return (
+    <Link
+      href={`/blog/category/${category}`}
+      className={`inline-flex items-center gap-1.5 rounded-full ${cat?.color || 'bg-primary'} text-white font-medium transition-opacity hover:opacity-80 ${sizeClasses[size]}`}
+    >
+      {showIcon && cat?.icon && <span>{cat.icon}</span>}
+      <span>{cat?.name || category}</span>
+    </Link>
+  );
+}
+```
+
+## Componente TagList
+
+```typescript title="components/blog/tag-list.tsx"
+import Link from 'next/link';
+
+interface TagListProps {
+  tags: string[];
+  limit?: number;
+  size?: 'sm' | 'md';
+}
+
+export function TagList({ tags, limit, size = 'sm' }: TagListProps) {
+  const displayTags = limit ? tags.slice(0, limit) : tags;
+  const remaining = limit ? tags.length - limit : 0;
+
+  const sizeClasses = {
+    sm: 'text-xs px-2 py-0.5',
+    md: 'text-sm px-3 py-1',
+  };
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {displayTags.map((tag) => (
+        <Link
+          key={tag}
+          href={`/blog/tag/${tag}`}
+          className={`rounded-full bg-secondary text-secondary-foreground hover:bg-primary hover:text-primary-foreground transition-colors ${sizeClasses[size]}`}
+        >
+          #{tag}
+        </Link>
+      ))}
+      {remaining > 0 && (
+        <span className={`text-muted-foreground ${sizeClasses[size]}`}>
+          +{remaining} más
+        </span>
+      )}
+    </div>
+  );
+}
+```
+
+## Sidebar con categorías y tags
+
+```typescript title="components/blog/sidebar.tsx"
+import Link from 'next/link';
+import { getAllCategories, getAllTags } from '@/lib/blog';
+import { getCategoryBySlug } from '@/config/categories';
+
+export function BlogSidebar() {
+  const categories = getAllCategories();
+  const tags = getAllTags();
+
+  return (
+    <aside className="space-y-8">
+      {/* Categorías */}
+      <div>
+        <h3 className="font-semibold mb-4">Categorías</h3>
+        <ul className="space-y-2">
+          {categories.map((category) => {
+            const cat = getCategoryBySlug(category.slug);
+            return (
+              <li key={category.slug}>
+                <Link
+                  href={`/blog/category/${category.slug}`}
+                  className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-secondary transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    {cat?.icon && <span>{cat.icon}</span>}
+                    {category.name}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    {category.count}
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      {/* Tags populares */}
+      <div>
+        <h3 className="font-semibold mb-4">Tags populares</h3>
+        <div className="flex flex-wrap gap-2">
+          {tags.slice(0, 15).map((tag) => (
+            <Link
+              key={tag}
+              href={`/blog/tag/${tag}`}
+              className="text-sm px-3 py-1 rounded-full bg-secondary hover:bg-primary hover:text-primary-foreground transition-colors"
+            >
+              #{tag}
+            </Link>
+          ))}
+        </div>
+      </div>
+    </aside>
+  );
+}
+```
+
+## Mejores prácticas
+
+### Categorías
+
+<Steps>
+  <Step>
+    ### Mantén pocas categorías
+    Entre 4-8 categorías es ideal. Muchas categorías confunden al usuario.
+  </Step>
+
+  <Step>
+    ### Nombres claros
+    Usa nombres descriptivos que el usuario entienda sin contexto.
+  </Step>
+
+  <Step>
+    ### Consistencia
+    Define categorías antes de escribir posts y mantén la misma estructura.
+  </Step>
+</Steps>
+
+### Tags
+
+<Steps>
+  <Step>
+    ### Sé específico
+    Usa tags específicos como "nextjs-14" en lugar de genéricos como "framework".
+  </Step>
+
+  <Step>
+    ### Normaliza
+    Usa siempre minúsculas y guiones: `react-hooks`, no `React Hooks`.
+  </Step>
+
+  <Step>
+    ### Limita la cantidad
+    Entre 3-7 tags por post es suficiente. Muchos tags diluyen el valor.
+  </Step>
+</Steps>
+
+## SEO para categorías y tags
+
+### Metadata optimizado
+
+```typescript title="lib/seo.ts"
+export function generateCategoryMetadata(category: Category, postCount: number) {
+  return {
+    title: `${category.name} - Artículos y tutoriales | Blog`,
+    description: `${category.description}. ${postCount} artículos disponibles.`,
+    openGraph: {
+      title: `${category.name} | Blog`,
+      description: category.description,
+    },
+  };
+}
+```
+
+### Canonical URLs
+
+```typescript
+// En la página de categoría
+<link rel="canonical" href={`https://tusitio.com/blog/category/${category.slug}`} />
+```
+
+### Structured Data para categoría
+
+```typescript
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: category.name,
+  description: category.description,
+  url: `https://tusitio.com/blog/category/${category.slug}`,
+  numberOfItems: posts.length,
+};
+```
+
+<Callout type="warn">
+  Considera usar `noindex` en páginas de tags si tienes muchos tags con pocos posts.
+  Esto evita contenido duplicado y thin content en Google.
+</Callout>
+
+## Siguiente paso
+
+[Aprende a crear un RSS Feed →](/docs/blog/rss)

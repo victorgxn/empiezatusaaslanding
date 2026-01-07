@@ -1,0 +1,504 @@
+---
+title: RSS Feed
+description: Genera un feed RSS automático para que los usuarios se suscriban a tu blog
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+# RSS Feed
+
+Permite que tus lectores se suscriban a tu blog y reciban nuevos artículos automáticamente.
+
+## Por qué RSS es importante
+
+| Beneficio | Descripción |
+|-----------|-------------|
+| **Retención** | Lectores reciben notificaciones de nuevos posts |
+| **Distribución** | Agregadores y apps muestran tu contenido |
+| **SEO** | Google News y otros servicios indexan tu feed |
+| **Profesionalismo** | Señal de calidad para tu audiencia técnica |
+
+<Callout type="info">
+  Muchos desarrolladores y entusiastas tech todavía usan RSS.
+  Es una forma de bajo fricción de mantener audiencia.
+</Callout>
+
+## Crear el RSS Feed
+
+### Instalar dependencias
+
+```bash
+npm install rss
+npm install -D @types/rss
+```
+
+### Crear el route handler
+
+<Tabs items={['RSS 2.0', 'Atom', 'JSON Feed']}>
+  <Tab value="RSS 2.0">
+    ```typescript title="app/blog/feed.xml/route.ts"
+    import RSS from 'rss';
+    import { getAllPosts } from '@/lib/blog';
+
+    export const dynamic = 'force-static';
+    export const revalidate = 3600; // Revalidar cada hora
+
+    const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tusitio.com';
+
+    export async function GET() {
+      const posts = getAllPosts();
+
+      const feed = new RSS({
+        title: 'EmpiezaTuSaaS Blog',
+        description: 'Artículos sobre desarrollo SaaS, indie hacking y emprendimiento tecnológico',
+        site_url: SITE_URL,
+        feed_url: `${SITE_URL}/blog/feed.xml`,
+        language: 'es',
+        image_url: `${SITE_URL}/og-image.jpg`,
+        copyright: `© ${new Date().getFullYear()} EmpiezaTuSaaS`,
+        pubDate: posts[0]?.date ? new Date(posts[0].date) : new Date(),
+        ttl: 60, // Time to live en minutos
+        custom_namespaces: {
+          content: 'http://purl.org/rss/1.0/modules/content/',
+          dc: 'http://purl.org/dc/elements/1.1/',
+        },
+      });
+
+      posts.forEach((post) => {
+        feed.item({
+          title: post.title,
+          description: post.description,
+          url: `${SITE_URL}/blog/${post.slug}`,
+          guid: `${SITE_URL}/blog/${post.slug}`,
+          date: new Date(post.date),
+          author: post.author.name,
+          categories: [post.category, ...post.tags],
+          enclosure: post.image
+            ? {
+                url: `${SITE_URL}${post.image}`,
+                type: 'image/jpeg',
+              }
+            : undefined,
+          custom_elements: [
+            { 'dc:creator': post.author.name },
+            { 'content:encoded': `<![CDATA[${post.description}]]>` },
+          ],
+        });
+      });
+
+      return new Response(feed.xml({ indent: true }), {
+        headers: {
+          'Content-Type': 'application/xml; charset=utf-8',
+          'Cache-Control': 'public, max-age=3600, s-maxage=3600',
+        },
+      });
+    }
+    ```
+  </Tab>
+
+  <Tab value="Atom">
+    ```typescript title="app/blog/atom.xml/route.ts"
+    import { getAllPosts } from '@/lib/blog';
+
+    export const dynamic = 'force-static';
+
+    const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tusitio.com';
+
+    export async function GET() {
+      const posts = getAllPosts();
+      const updated = posts[0]?.date
+        ? new Date(posts[0].date).toISOString()
+        : new Date().toISOString();
+
+      const atom = `<?xml version="1.0" encoding="utf-8"?>
+    <feed xmlns="http://www.w3.org/2005/Atom">
+      <id>${SITE_URL}/blog</id>
+      <title>EmpiezaTuSaaS Blog</title>
+      <subtitle>Artículos sobre desarrollo SaaS, indie hacking y emprendimiento</subtitle>
+      <link href="${SITE_URL}/blog"/>
+      <link href="${SITE_URL}/blog/atom.xml" rel="self"/>
+      <updated>${updated}</updated>
+      <author>
+        <name>EmpiezaTuSaaS</name>
+        <uri>${SITE_URL}</uri>
+      </author>
+      <icon>${SITE_URL}/favicon.ico</icon>
+      <logo>${SITE_URL}/logo.png</logo>
+      ${posts
+        .map(
+          (post) => `
+      <entry>
+        <id>${SITE_URL}/blog/${post.slug}</id>
+        <title>${escapeXml(post.title)}</title>
+        <link href="${SITE_URL}/blog/${post.slug}"/>
+        <updated>${new Date(post.date).toISOString()}</updated>
+        <published>${new Date(post.date).toISOString()}</published>
+        <author>
+          <name>${escapeXml(post.author.name)}</name>
+        </author>
+        <summary>${escapeXml(post.description)}</summary>
+        <category term="${post.category}"/>
+        ${post.tags.map((tag) => `<category term="${tag}"/>`).join('\n        ')}
+      </entry>`
+        )
+        .join('')}
+    </feed>`;
+
+      return new Response(atom, {
+        headers: {
+          'Content-Type': 'application/atom+xml; charset=utf-8',
+          'Cache-Control': 'public, max-age=3600',
+        },
+      });
+    }
+
+    function escapeXml(text: string): string {
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
+    }
+    ```
+  </Tab>
+
+  <Tab value="JSON Feed">
+    ```typescript title="app/blog/feed.json/route.ts"
+    import { getAllPosts } from '@/lib/blog';
+
+    export const dynamic = 'force-static';
+
+    const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tusitio.com';
+
+    export async function GET() {
+      const posts = getAllPosts();
+
+      const feed = {
+        version: 'https://jsonfeed.org/version/1.1',
+        title: 'EmpiezaTuSaaS Blog',
+        home_page_url: `${SITE_URL}/blog`,
+        feed_url: `${SITE_URL}/blog/feed.json`,
+        description: 'Artículos sobre desarrollo SaaS, indie hacking y emprendimiento',
+        icon: `${SITE_URL}/icon-512.png`,
+        favicon: `${SITE_URL}/favicon.ico`,
+        language: 'es',
+        authors: [
+          {
+            name: 'EmpiezaTuSaaS',
+            url: SITE_URL,
+          },
+        ],
+        items: posts.map((post) => ({
+          id: `${SITE_URL}/blog/${post.slug}`,
+          url: `${SITE_URL}/blog/${post.slug}`,
+          title: post.title,
+          content_text: post.description,
+          summary: post.description,
+          image: post.image ? `${SITE_URL}${post.image}` : undefined,
+          date_published: new Date(post.date).toISOString(),
+          authors: [{ name: post.author.name }],
+          tags: [post.category, ...post.tags],
+        })),
+      };
+
+      return new Response(JSON.stringify(feed, null, 2), {
+        headers: {
+          'Content-Type': 'application/feed+json; charset=utf-8',
+          'Cache-Control': 'public, max-age=3600',
+        },
+      });
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Agregar link al feed en el head
+
+```typescript title="app/layout.tsx"
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  // ... otras propiedades
+  alternates: {
+    types: {
+      'application/rss+xml': '/blog/feed.xml',
+      'application/atom+xml': '/blog/atom.xml',
+      'application/feed+json': '/blog/feed.json',
+    },
+  },
+};
+```
+
+Esto genera en el HTML:
+
+```html
+<link rel="alternate" type="application/rss+xml" href="/blog/feed.xml" />
+<link rel="alternate" type="application/atom+xml" href="/blog/atom.xml" />
+<link rel="alternate" type="application/feed+json" href="/blog/feed.json" />
+```
+
+## Botón de suscripción
+
+### Componente RSSButton
+
+```typescript title="components/blog/rss-button.tsx"
+import { Rss } from 'lucide-react';
+import Link from 'next/link';
+
+interface RSSButtonProps {
+  variant?: 'icon' | 'button' | 'link';
+  className?: string;
+}
+
+export function RSSButton({ variant = 'button', className = '' }: RSSButtonProps) {
+  const href = '/blog/feed.xml';
+
+  if (variant === 'icon') {
+    return (
+      <Link
+        href={href}
+        target="_blank"
+        className={`p-2 rounded-lg hover:bg-secondary transition-colors ${className}`}
+        title="Suscribirse via RSS"
+      >
+        <Rss className="w-5 h-5" />
+      </Link>
+    );
+  }
+
+  if (variant === 'link') {
+    return (
+      <Link
+        href={href}
+        target="_blank"
+        className={`text-muted-foreground hover:text-foreground inline-flex items-center gap-2 ${className}`}
+      >
+        <Rss className="w-4 h-4" />
+        RSS Feed
+      </Link>
+    );
+  }
+
+  return (
+    <Link
+      href={href}
+      target="_blank"
+      className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-colors ${className}`}
+    >
+      <Rss className="w-4 h-4" />
+      Suscribirse via RSS
+    </Link>
+  );
+}
+```
+
+### Usar en el blog
+
+```typescript title="app/blog/page.tsx"
+import { RSSButton } from '@/components/blog/rss-button';
+
+export default function BlogPage() {
+  return (
+    <main>
+      <div className="flex items-center justify-between mb-8">
+        <h1>Blog</h1>
+        <RSSButton />
+      </div>
+      {/* ... */}
+    </main>
+  );
+}
+```
+
+## Feed por categoría
+
+Crea feeds específicos por categoría:
+
+```typescript title="app/blog/category/[category]/feed.xml/route.ts"
+import RSS from 'rss';
+import { getPostsByCategory } from '@/lib/blog';
+import { getCategoryBySlug } from '@/config/categories';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tusitio.com';
+
+interface Props {
+  params: Promise<{ category: string }>;
+}
+
+export async function GET(request: Request, { params }: Props) {
+  const { category } = await params;
+  const categoryInfo = getCategoryBySlug(category);
+  const posts = getPostsByCategory(category);
+
+  if (!categoryInfo || posts.length === 0) {
+    return new Response('Not found', { status: 404 });
+  }
+
+  const feed = new RSS({
+    title: `${categoryInfo.name} | EmpiezaTuSaaS Blog`,
+    description: categoryInfo.description,
+    site_url: `${SITE_URL}/blog/category/${category}`,
+    feed_url: `${SITE_URL}/blog/category/${category}/feed.xml`,
+    language: 'es',
+  });
+
+  posts.forEach((post) => {
+    feed.item({
+      title: post.title,
+      description: post.description,
+      url: `${SITE_URL}/blog/${post.slug}`,
+      guid: `${SITE_URL}/blog/${post.slug}`,
+      date: new Date(post.date),
+      author: post.author.name,
+    });
+  });
+
+  return new Response(feed.xml({ indent: true }), {
+    headers: {
+      'Content-Type': 'application/xml; charset=utf-8',
+    },
+  });
+}
+
+// Genera rutas estáticas
+export async function generateStaticParams() {
+  const { categories } = await import('@/config/categories');
+  return categories.map((cat) => ({ category: cat.slug }));
+}
+```
+
+## Newsletter con RSS
+
+Integra tu RSS con servicios de newsletter:
+
+### Mailchimp RSS-to-Email
+
+```typescript title="lib/newsletter.ts"
+// URL del feed para configurar en Mailchimp
+export const RSS_FEED_URL = 'https://tusitio.com/blog/feed.xml';
+
+// Instrucciones para configurar:
+// 1. Ve a Mailchimp > Campaigns > Create > Email > RSS
+// 2. Pega la URL del feed
+// 3. Configura frecuencia (diaria, semanal)
+// 4. Diseña el template
+```
+
+### ConvertKit
+
+```typescript
+// ConvertKit puede importar posts via RSS automáticamente
+// 1. Settings > RSS Feed
+// 2. Add feed URL
+// 3. Configura la automatización
+```
+
+## Validar tu feed
+
+<Steps>
+  <Step>
+    ### W3C Feed Validator
+    Visita [validator.w3.org/feed](https://validator.w3.org/feed/) y pega tu URL.
+  </Step>
+
+  <Step>
+    ### Feedly
+    Busca tu feed en [feedly.com](https://feedly.com) para verificar que se muestra correctamente.
+  </Step>
+
+  <Step>
+    ### Feed Validator
+    Usa [feedvalidator.org](https://www.feedvalidator.org/) para validación detallada.
+  </Step>
+</Steps>
+
+## Sitemap para el feed
+
+Añade tu feed al sitemap:
+
+```typescript title="app/sitemap.ts"
+import { MetadataRoute } from 'next';
+import { getAllPosts } from '@/lib/blog';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tusitio.com';
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  const posts = getAllPosts();
+
+  const blogPosts = posts.map((post) => ({
+    url: `${SITE_URL}/blog/${post.slug}`,
+    lastModified: new Date(post.date),
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  }));
+
+  return [
+    {
+      url: SITE_URL,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 1,
+    },
+    {
+      url: `${SITE_URL}/blog`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.9,
+    },
+    // Feed URLs (opcional pero útil)
+    {
+      url: `${SITE_URL}/blog/feed.xml`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.3,
+    },
+    ...blogPosts,
+  ];
+}
+```
+
+## robots.txt
+
+Añade el feed a robots.txt:
+
+```typescript title="app/robots.ts"
+import { MetadataRoute } from 'next';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tusitio.com';
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: {
+      userAgent: '*',
+      allow: '/',
+    },
+    sitemap: `${SITE_URL}/sitemap.xml`,
+    // Indicar ubicación del feed (opcional)
+    host: SITE_URL,
+  };
+}
+```
+
+## Verificar implementación
+
+```bash
+# Iniciar servidor
+npm run dev
+
+# Verificar feeds
+curl http://localhost:3000/blog/feed.xml
+curl http://localhost:3000/blog/atom.xml
+curl http://localhost:3000/blog/feed.json
+```
+
+<Callout type="warn">
+  Asegúrate de que `NEXT_PUBLIC_SITE_URL` esté configurado correctamente en producción.
+  URLs incorrectas en el feed afectan la indexación y suscripción.
+</Callout>
+
+## Siguiente paso
+
+[Optimiza el SEO de cada artículo →](/docs/blog/seo-optimization)

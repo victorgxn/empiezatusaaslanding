@@ -86,7 +86,7 @@ export function Testimonials() {
           </p>
         </motion.div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 lg:gap-6">
           {memoizedTestimonials.map((testimonial, index) => (
             <motion.div
               key={testimonial.name}
@@ -94,40 +94,40 @@ export function Testimonials() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.1 }}
               viewport={{ once: true }}
-              className="glass rounded-2xl p-6 relative group hover:glow-sm transition-all"
+              className="glass rounded-xl sm:rounded-2xl p-2 sm:p-4 lg:p-6 relative group hover:glow-sm transition-all"
             >
-              <Quote className="absolute top-6 right-6 w-8 h-8 text-primary/20" />
+              <Quote className="absolute top-2 sm:top-6 right-2 sm:right-6 w-4 h-4 sm:w-8 sm:h-8 text-primary/20" />
 
               {/* Rating */}
-              <div className="flex gap-1 mb-4">
+              <div className="flex gap-0.5 sm:gap-1 mb-2 sm:mb-4">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <Star
                     key={star}
-                    className="w-4 h-4 fill-gold text-gold"
+                    className="w-2.5 h-2.5 sm:w-4 sm:h-4 fill-gold text-gold"
                   />
                 ))}
               </div>
 
               {/* Content */}
-              <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
+              <p className="text-muted-foreground mb-3 sm:mb-6 text-[9px] sm:text-xs lg:text-sm leading-relaxed line-clamp-3 sm:line-clamp-none">
                 &ldquo;{testimonial.content}&rdquo;
               </p>
 
               {/* Author */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/50 to-accent/50 flex items-center justify-center text-sm font-bold">
+              <div className="flex items-center justify-between gap-1">
+                <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
+                  <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-primary/50 to-accent/50 flex items-center justify-center text-[8px] sm:text-sm font-bold flex-shrink-0">
                     {testimonial.avatar}
                   </div>
-                  <div>
-                    <p className="font-medium text-sm">{testimonial.name}</p>
-                    <p className="text-xs text-muted-foreground">
+                  <div className="min-w-0">
+                    <p className="font-medium text-[9px] sm:text-sm truncate">{testimonial.name}</p>
+                    <p className="text-[8px] sm:text-xs text-muted-foreground truncate hidden sm:block">
                       {testimonial.role}
                     </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-primary">
+                <div className="text-right flex-shrink-0">
+                  <p className="text-[8px] sm:text-sm font-bold text-primary">
                     {testimonial.revenue}
                   </p>
                 </div>

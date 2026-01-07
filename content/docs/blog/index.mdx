@@ -1,0 +1,105 @@
+---
+title: Blog
+description: Crea un blog optimizado para SEO con MDX y Next.js
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Blog
+
+EmpiezaTuSaaS incluye un sistema de blog completo con MDX, optimizado para SEO y listo para producción.
+
+<Callout type="info">
+  Un blog bien optimizado puede generar tráfico orgánico constante a tu SaaS,
+  mejorando tu autoridad de dominio y atrayendo clientes potenciales.
+</Callout>
+
+## Por qué incluir un blog
+
+- **SEO**: Cada artículo es una oportunidad de rankear en Google
+- **Autoridad**: Demuestra expertise en tu nicho
+- **Tráfico orgánico**: Visitantes gratuitos que buscan soluciones
+- **Lead generation**: Convierte lectores en usuarios
+- **Contenido compartible**: Amplifica tu alcance en redes sociales
+
+## Características incluidas
+
+| Característica | Descripción |
+|----------------|-------------|
+| **MDX** | Markdown con componentes React |
+| **Categorías y tags** | Organiza tu contenido |
+| **RSS Feed** | Suscriptores automáticos |
+| **Sitemap dinámico** | Indexación automática |
+| **Open Graph** | Vista previa en redes sociales |
+| **Structured Data** | Rich snippets en Google |
+| **Tiempo de lectura** | Calculado automáticamente |
+| **Tabla de contenidos** | Navegación dentro del post |
+
+## Guías
+
+<Cards>
+  <Card
+    title="Configuración inicial"
+    description="Configura el blog desde cero"
+    href="/docs/blog/setup"
+  />
+  <Card
+    title="Crear posts"
+    description="Escribe artículos con MDX"
+    href="/docs/blog/posts"
+  />
+  <Card
+    title="Categorías y tags"
+    description="Organiza y filtra contenido"
+    href="/docs/blog/categories"
+  />
+  <Card
+    title="RSS Feed"
+    description="Genera feed para suscriptores"
+    href="/docs/blog/rss"
+  />
+  <Card
+    title="SEO avanzado"
+    description="Optimiza cada artículo para Google"
+    href="/docs/blog/seo-optimization"
+  />
+</Cards>
+
+## Stack del blog
+
+```
+blog/
+├── content/blog/          # Artículos en MDX
+├── app/blog/              # Páginas del blog
+│   ├── page.tsx           # Lista de posts
+│   ├── [slug]/page.tsx    # Post individual
+│   └── category/[slug]/   # Posts por categoría
+├── components/blog/       # Componentes del blog
+└── lib/blog.ts            # Utilidades y helpers
+```
+
+## Inicio rápido
+
+```bash
+# Crear un nuevo post
+touch content/blog/mi-primer-post.mdx
+```
+
+```mdx title="content/blog/mi-primer-post.mdx"
+---
+title: Mi primer post
+description: Una introducción a mi blog
+date: 2024-01-15
+author: Tu Nombre
+category: tutorial
+tags: [nextjs, react, tutorial]
+image: /blog/mi-primer-post.jpg
+---
+
+# Mi primer post
+
+Este es el contenido de mi primer artículo...
+```
+
+[Comenzar con la configuración →](/docs/blog/setup)

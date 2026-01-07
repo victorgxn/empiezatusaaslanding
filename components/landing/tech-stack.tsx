@@ -76,7 +76,7 @@ export function TechStack() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-4 gap-2 sm:gap-4 lg:gap-6">
           {technologies.map((tech, index) => (
             <motion.div
               key={tech.name}
@@ -85,9 +85,9 @@ export function TechStack() {
               transition={{ duration: 0.3, delay: index * 0.05 }}
               viewport={{ once: true }}
               whileHover={{ scale: 1.05, y: -5 }}
-              className="glass rounded-xl p-6 text-center group cursor-default"
+              className="glass rounded-lg sm:rounded-xl p-2 sm:p-4 lg:p-6 text-center group cursor-default"
             >
-              <div className="w-14 h-14 mx-auto mb-4 rounded-md overflow-hidden group-hover:scale-110 transition-transform">
+              <div className="w-8 h-8 sm:w-12 sm:h-12 lg:w-14 lg:h-14 mx-auto mb-2 sm:mb-4 rounded-md overflow-hidden group-hover:scale-110 transition-transform">
                 <Image
                   src={tech.icon}
                   alt={tech.name}
@@ -96,8 +96,8 @@ export function TechStack() {
                   className="w-full h-full object-contain"
                 />
               </div>
-              <h3 className="font-semibold mb-1">{tech.name}</h3>
-              <p className="text-sm text-muted-foreground">{tech.description}</p>
+              <h3 className="font-semibold text-xs sm:text-sm lg:text-base mb-0.5 sm:mb-1 truncate">{tech.name}</h3>
+              <p className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground hidden sm:block">{tech.description}</p>
             </motion.div>
           ))}
         </div>

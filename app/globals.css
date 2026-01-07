@@ -58,6 +58,53 @@
 
 :root {
   --radius: 1rem;
+  /* Light Mode - RPG Parchment/Scroll Style */
+  --background: oklch(0.97 0.01 85);
+  --foreground: oklch(0.18 0.03 280);
+  --card: oklch(0.98 0.008 80);
+  --card-foreground: oklch(0.18 0.03 280);
+  --popover: oklch(0.99 0.005 85);
+  --popover-foreground: oklch(0.18 0.03 280);
+  /* Naranja fuego - más intenso para light mode */
+  --primary: oklch(0.62 0.22 40);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.92 0.02 85);
+  --secondary-foreground: oklch(0.25 0.03 280);
+  --muted: oklch(0.94 0.015 85);
+  --muted-foreground: oklch(0.45 0.02 280);
+  /* Cyan/azul - más oscuro para contraste */
+  --accent: oklch(0.55 0.15 220);
+  --accent-foreground: oklch(0.98 0.01 220);
+  --destructive: oklch(0.55 0.22 25);
+  --border: oklch(0.88 0.02 85);
+  --input: oklch(0.95 0.01 85);
+  --ring: oklch(0.62 0.22 40);
+  /* Colores especiales para tiers */
+  --chart-1: oklch(0.62 0.22 40);
+  --chart-2: oklch(0.55 0.15 220);
+  --chart-3: oklch(0.55 0.18 155);
+  --chart-4: oklch(0.72 0.2 70);
+  --chart-5: oklch(0.55 0.2 310);
+  --sidebar: oklch(0.96 0.01 85);
+  --sidebar-foreground: oklch(0.18 0.03 280);
+  --sidebar-primary: oklch(0.62 0.22 40);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.92 0.02 85);
+  --sidebar-accent-foreground: oklch(0.25 0.03 280);
+  --sidebar-border: oklch(0.88 0.02 85);
+  --sidebar-ring: oklch(0.62 0.22 40);
+  /* Dorado del tesoro - más oscuro para light mode */
+  --gold: oklch(0.68 0.2 70);
+  --gold-foreground: oklch(0.98 0 0);
+  /* Verde esmeralda de gemas */
+  --emerald: oklch(0.55 0.2 155);
+  --emerald-foreground: oklch(0.98 0 0);
+  /* Púrpura mágico */
+  --legendary: oklch(0.5 0.22 300);
+  --legendary-foreground: oklch(0.98 0 0);
+}
+
+.dark {
   /* RPG Dungeon Style - Basado en las imágenes */
   --background: oklch(0.15 0.045 280);
   --foreground: oklch(0.98 0.01 90);

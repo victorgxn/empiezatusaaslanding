@@ -176,7 +176,7 @@ export function Pricing() {
         </motion.div>
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 lg:gap-8">
           {memoizedTiers.map((tier, index) => {
             const colorClasses = colorMap[tier.color];
 
@@ -188,31 +188,32 @@ export function Pricing() {
                 whileHover={{ scale: 1.02, rotate: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.15, type: "spring", bounce: 0.3 }}
                 viewport={{ once: true }}
-                className={`relative glass-card p-6 sm:p-8 ${tier.glowClass} ${
-                  "featured" in tier && tier.featured ? "md:-mt-8 md:mb-8 ring-4 ring-gold/60 scale-[1.02]" : ""
+                className={`relative glass-card p-3 sm:p-6 lg:p-8 ${tier.glowClass} ${
+                  "featured" in tier && tier.featured ? "sm:-mt-8 sm:mb-8 ring-2 sm:ring-4 ring-gold/60 scale-[1.01] sm:scale-[1.02]" : ""
                 }`}
               >
                 {/* Featured badge - Cartoon style */}
                 {"featured" in tier && tier.featured && (
                   <motion.div
-                    className="absolute -top-5 left-1/2 -translate-x-1/2 z-10"
+                    className="absolute -top-3 sm:-top-5 left-1/2 -translate-x-1/2 z-10"
                     initial={{ scale: 0, rotate: -10 }}
                     whileInView={{ scale: 1, rotate: 0 }}
                     transition={{ delay: 0.3, type: "spring", bounce: 0.5 }}
                     viewport={{ once: true }}
                   >
-                    <Badge className="bg-gradient-to-r from-gold via-primary to-gold text-white px-6 py-2 shadow-xl text-base font-black tracking-wider uppercase cartoon-shadow-gold rounded-full pulse-glow">
-                      <Crown className="w-5 h-5 mr-2" />
-                      {"badge" in tier ? tier.badge : "RECOMENDADO"}
+                    <Badge className="bg-gradient-to-r from-gold via-primary to-gold text-white px-2 sm:px-6 py-1 sm:py-2 shadow-xl text-[8px] sm:text-base font-black tracking-wider uppercase cartoon-shadow-gold rounded-full pulse-glow">
+                      <Crown className="w-3 h-3 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">{"badge" in tier ? tier.badge : "RECOMENDADO"}</span>
+                      <span className="sm:hidden">TOP</span>
                     </Badge>
                   </motion.div>
                 )}
 
                 {/* Header - Cartoon style */}
-                <div className="mb-8">
-                  <div className="flex items-center gap-4 mb-4">
+                <div className="mb-4 sm:mb-8">
+                  <div className="flex items-center gap-2 sm:gap-4 mb-2 sm:mb-4">
                     <motion.div
-                      className="w-16 h-16 rounded-2xl overflow-hidden"
+                      className="w-10 h-10 sm:w-14 sm:h-14 lg:w-16 lg:h-16 rounded-xl sm:rounded-2xl overflow-hidden flex-shrink-0"
                       whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
                       transition={{ duration: 0.4 }}
                     >
@@ -224,21 +225,21 @@ export function Pricing() {
                         className="w-full h-full object-contain"
                       />
                     </motion.div>
-                    <div>
-                      <h3 className="text-2xl font-black">{tier.name}</h3>
-                      <p className="text-sm text-muted-foreground font-medium">{tier.tagline}</p>
+                    <div className="min-w-0">
+                      <h3 className="text-sm sm:text-xl lg:text-2xl font-black truncate">{tier.name}</h3>
+                      <p className="text-[10px] sm:text-sm text-muted-foreground font-medium hidden sm:block">{tier.tagline}</p>
                     </div>
                   </div>
-                  <p className="text-base text-muted-foreground mb-6">
+                  <p className="text-xs sm:text-sm lg:text-base text-muted-foreground mb-3 sm:mb-6 hidden sm:block">
                     {tier.description}
                   </p>
 
                   {/* Price - Cartoon style */}
-                  <div className="flex items-baseline gap-2 mb-2">
-                    <span className="text-5xl sm:text-6xl font-black">{tier.price}</span>
-                    <span className="text-2xl text-muted-foreground font-bold">EUR</span>
+                  <div className="flex items-baseline gap-1 sm:gap-2 mb-1 sm:mb-2">
+                    <span className="text-2xl sm:text-4xl lg:text-6xl font-black">{tier.price}</span>
+                    <span className="text-sm sm:text-xl lg:text-2xl text-muted-foreground font-bold">EUR</span>
                   </div>
-                  <p className="text-sm text-muted-foreground font-medium">
+                  <p className="text-[10px] sm:text-sm text-muted-foreground font-medium hidden sm:block">
                     Pago único, acceso de por vida
                   </p>
                 </div>
@@ -246,15 +247,16 @@ export function Pricing() {
                 {/* CTA - Cartoon button */}
                 <Button
                   size="lg"
-                  className={`w-full mb-8 py-6 font-black text-lg uppercase tracking-wide cartoon-btn rounded-2xl ${colorClasses.button} ${
+                  className={`w-full mb-4 sm:mb-8 py-2 sm:py-4 lg:py-6 font-black text-[10px] sm:text-sm lg:text-lg uppercase tracking-wide cartoon-btn rounded-xl sm:rounded-2xl ${colorClasses.button} ${
                     tier.id === "dragon" ? "glow-gold" : tier.id === "guild" ? "glow-cyan" : "glow-sm"
                   }`}
                 >
-                  {tier.cta}
+                  <span className="hidden sm:inline">{tier.cta}</span>
+                  <span className="sm:hidden">Comprar</span>
                 </Button>
 
                 {/* Features */}
-                <div className="space-y-3">
+                <div className="space-y-1 sm:space-y-2 lg:space-y-3">
                   {tier.features.map((feature, featureIndex) => (
                     <motion.div
                       key={feature.text}
@@ -262,22 +264,22 @@ export function Pricing() {
                       whileInView={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.2, delay: 0.3 + featureIndex * 0.03 }}
                       viewport={{ once: true }}
-                      className={`flex items-center gap-3 ${
+                      className={`flex items-center gap-1.5 sm:gap-3 ${
                         !feature.included ? "opacity-40" : ""
                       } ${"highlight" in feature && feature.highlight ? "font-medium" : ""}`}
                     >
-                      <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
+                      <div className={`w-3.5 h-3.5 sm:w-5 sm:h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
                         feature.included ? colorClasses.check : "bg-muted"
                       }`}>
-                        <Check className={`w-3 h-3 ${feature.included ? "" : "text-muted-foreground"}`} />
+                        <Check className={`w-2 h-2 sm:w-3 sm:h-3 ${feature.included ? "" : "text-muted-foreground"}`} />
                       </div>
-                      <span className={`text-sm ${
+                      <span className={`text-[9px] sm:text-xs lg:text-sm truncate ${
                         "highlight" in feature && feature.highlight ? "text-foreground" : "text-muted-foreground"
                       }`}>
                         {feature.text}
                       </span>
                       {"highlight" in feature && feature.highlight && (
-                        <Badge variant="outline" className={`text-xs py-0 px-2 ${colorClasses.badge}`}>
+                        <Badge variant="outline" className={`text-[8px] sm:text-xs py-0 px-1 sm:px-2 hidden sm:inline-flex ${colorClasses.badge}`}>
                           Nuevo
                         </Badge>
                       )}
@@ -287,21 +289,21 @@ export function Pricing() {
 
                 {/* Course section for Dragon Slayer */}
                 {"course" in tier && tier.course && (
-                  <div className="mt-6 pt-6 border-t border-gold/30">
-                    <div className="bg-gradient-to-br from-gold/20 to-primary/10 rounded-xl p-4 border border-gold/30">
-                      <div className="flex items-center gap-2 mb-3">
-                        <div className="w-8 h-8 rounded-lg bg-gold/30 flex items-center justify-center">
-                          <BookOpen className="w-4 h-4 text-gold" />
+                  <div className="mt-3 sm:mt-6 pt-3 sm:pt-6 border-t border-gold/30 hidden sm:block">
+                    <div className="bg-gradient-to-br from-gold/20 to-primary/10 rounded-lg sm:rounded-xl p-2 sm:p-4 border border-gold/30">
+                      <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                        <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-gold/30 flex items-center justify-center">
+                          <BookOpen className="w-3 h-3 sm:w-4 sm:h-4 text-gold" />
                         </div>
-                        <span className="font-bold text-gold">{tier.course.title}</span>
+                        <span className="font-bold text-gold text-xs sm:text-base">{tier.course.title}</span>
                       </div>
-                      <div className="space-y-2">
+                      <div className="space-y-1 sm:space-y-2">
                         {tier.course.items.map((item: CourseItem) => {
                           const CourseIcon = item.icon;
                           return (
                             <div key={item.text} className="flex items-center gap-2">
-                              <CourseIcon className="w-4 h-4 text-gold/80" />
-                              <span className="text-sm text-foreground font-medium">{item.text}</span>
+                              <CourseIcon className="w-3 h-3 sm:w-4 sm:h-4 text-gold/80" />
+                              <span className="text-[10px] sm:text-sm text-foreground font-medium">{item.text}</span>
                             </div>
                           );
                         })}
