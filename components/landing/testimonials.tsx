@@ -70,7 +70,7 @@ export function Testimonials() {
             <span className="text-gradient">usuarios</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            +500 builders ya están en la expedición con EmpiezaTuSaaS
+            +20 builders ya están en la expedición con EmpiezaTuSaaS
           </p>
         </motion.div>
 
@@ -133,7 +133,7 @@ export function Testimonials() {
           className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-8"
         >
           {[
-            { value: "500+", label: "Builders en el gremio" },
+            { value: "20+", label: "Builders en el gremio" },
             { value: "$2.5M+", label: "Revenue generado" },
             { value: "4.9/5", label: "Rating promedio" },
             { value: "50+", label: "Países" },

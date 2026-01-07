@@ -10,14 +10,39 @@ import {
 
 const faqs = [
   {
-    question: "¿Qué stack tecnológico usa ShipFast?",
+    question: "¿Es EmpiezaTuSaaS mejor que herramientas como Lovable o Bolt?",
     answer:
-      "ShipFast está construido con Next.js 15, TypeScript, Tailwind CSS v4, Shadcn/ui, Prisma ORM, NextAuth.js para autenticación, Stripe para pagos, y Resend para emails. Todo configurado y listo para producción.",
+      "Lovable y Bolt son herramientas geniales si quieres construir una landing page rápidamente. Pero no te ayudan a lanzar una startup. EmpiezaTuSaaS es un boilerplate completo para startups: incluye sistema de pagos, base de datos, login, componentes UI probados en batalla, y mucho más. Le da a tu editor de código con IA contexto real para construir funcionalidades completas en segundos. Reutilízalo en todos tus proyectos sin perder tiempo aprendiendo una nueva configuración.",
+  },
+  {
+    question: "¿Funciona EmpiezaTuSaaS con IA (Cursor, Copilot)?",
+    answer:
+      "No solo funciona con IA, ¡está construido para ella! EmpiezaTuSaaS viene con un código base completo que le da a tu editor de código con IA contexto real para construir funcionalidades completas en segundos. Solo tienes que pedirle a tu IA que construya la feature que necesitas, y generará el código usando las convenciones de nombres, estructura de archivos y buenas prácticas que ya conoces.",
+  },
+  {
+    question: "¿Necesito experiencia previa en programación?",
+    answer:
+      "¡No! Si compras el pack Dragon Slayer que incluye el curso de 12 horas, aprenderás todo lo necesario desde cero. El curso te guía paso a paso para lanzar tu primer MVP sin necesidad de conocimientos previos de programación.",
+  },
+  {
+    question: "¿Hay otros costes asociados?",
+    answer:
+      "Muchas plataformas de hosting como Vercel te permiten alojar un proyecto gratis (front-end + back-end) y bases de datos como MongoDB/Supabase tienen planes gratuitos — así que puedes lanzar tu primera app por 0€/mes. Si usas Magic Links para registro, gastarás aproximadamente 1€ por cada 1.000 usuarios.",
+  },
+  {
+    question: "¿Es solo una plantilla web?",
+    answer:
+      "Es mucho más que una plantilla. Puedes copiar/pegar secciones para construir tu sitio rápidamente: sección de precios, FAQ, e incluso un blog completo. También incluye componentes UI como botones, modales, popovers, etc. Además viene con herramientas esenciales para un negocio online: procesamiento de pagos, emails, SEO, y más.",
+  },
+  {
+    question: "Mi stack tecnológico es diferente, ¿puedo usarlo igual?",
+    answer:
+      "¡Sí! Las librerías son independientes. Puedes usar SendGrid en lugar de Resend, LemonSqueezy en lugar de Stripe, o MySQL en lugar de PostgreSQL, por ejemplo. El código está estructurado para ser flexible.",
   },
   {
     question: "¿Puedo usarlo para proyectos de clientes?",
     answer:
-      "¡Sí! La licencia te permite usar ShipFast para proyectos personales y comerciales ilimitados. Puedes construir SaaS para ti o para tus clientes sin restricciones.",
+      "¡Sí! La licencia te permite usar EmpiezaTuSaaS para proyectos personales y comerciales ilimitados. Puedes construir SaaS para ti o para tus clientes sin restricciones.",
   },
   {
     question: "¿Incluye actualizaciones futuras?",
@@ -25,24 +50,9 @@ const faqs = [
       "Sí, el acceso de por vida incluye todas las actualizaciones futuras. Cuando añadamos nuevas funcionalidades, integraciones o mejoras, las recibirás automáticamente sin costo adicional.",
   },
   {
-    question: "¿Hay soporte disponible?",
-    answer:
-      "Tienes acceso a nuestro Discord privado donde puedes hacer preguntas, compartir tu progreso y conectar con otros builders. También respondemos consultas por email en menos de 24 horas.",
-  },
-  {
-    question: "¿Funciona con AI assistants como Cursor?",
-    answer:
-      "¡Absolutamente! El código está estructurado de forma clara y consistente, lo que lo hace ideal para trabajar con Cursor, Claude, ChatGPT, v0.dev y otros asistentes de código AI.",
-  },
-  {
     question: "¿Cuál es la política de reembolso?",
     answer:
-      "Ofrecemos una garantía de 14 días. Si no estás satisfecho con ShipFast por cualquier motivo, te devolvemos el 100% de tu dinero, sin preguntas.",
-  },
-  {
-    question: "¿Necesito experiencia previa con Next.js?",
-    answer:
-      "Conocimientos básicos de React/Next.js son recomendados, pero no necesitas ser un experto. La documentación incluye guías paso a paso y el código está bien comentado.",
+      "Ofrecemos una garantía de 14 días. Si no estás satisfecho con EmpiezaTuSaaS por cualquier motivo, te devolvemos el 100% de tu dinero, sin preguntas.",
   },
   {
     question: "¿Puedo cambiar la base de datos?",
@@ -105,7 +115,7 @@ export function FAQ() {
           <p className="text-muted-foreground">
             ¿Tienes otra pregunta?{" "}
             <a
-              href="mailto:hello@shipfast.com"
+              href="mailto:victxrgxnzalez@gmail.com"
               className="text-primary hover:underline"
             >
               Escríbenos

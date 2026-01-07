@@ -50,7 +50,7 @@ export function CTA() {
             <span className="text-gradient">expedición</span>?
           </h2>
           <p className="text-xl sm:text-2xl text-foreground/90 mb-10 max-w-2xl mx-auto drop-shadow-lg">
-            Únete a <span className="text-foreground font-black">+500 builders</span> que ya están
+            Únete a <span className="text-foreground font-black">+20 builders</span> que ya están
             construyendo sus SaaS. Empieza hoy y lanza tu primer producto.
           </p>
 

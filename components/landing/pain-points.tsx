@@ -1,131 +1,283 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Clock, CheckCircle2, ArrowDown } from "lucide-react";
+import {
+  Clock,
+  CheckCircle2,
+  Zap,
+  Shield,
+  CreditCard,
+  Mail,
+  Layout,
+  Users,
+  Search,
+  Skull,
+  Sparkles,
+  Trophy,
+  Rocket
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const painPoints = [
-  { task: "Configurar Auth (NextAuth/Clerk)", hours: 8 },
-  { task: "Integrar Stripe/Pagos", hours: 12 },
-  { task: "Emails transaccionales", hours: 4 },
-  { task: "Landing page responsive", hours: 6 },
-  { task: "Dashboard con roles", hours: 10 },
-  { task: "SEO + Analytics", hours: 4 },
+  { task: "Configurar Auth (Better Auth)", hours: 8, icon: Shield },
+  { task: "Integrar Stripe/Pagos", hours: 12, icon: CreditCard },
+  { task: "Emails transaccionales", hours: 4, icon: Mail },
+  { task: "Landing page responsive", hours: 6, icon: Layout },
+  { task: "Dashboard con roles", hours: 10, icon: Users },
+  { task: "SEO + Analytics", hours: 4, icon: Search },
+];
+
+const solutions = [
+  { text: "Autenticación lista en minutos", icon: Shield },
+  { text: "Pagos con Stripe integrados", icon: CreditCard },
+  { text: "Emails configurados", icon: Mail },
+  { text: "Dashboard profesional", icon: Layout },
+  { text: "SEO optimizado desde el día 1", icon: Search },
 ];
 
 const totalHours = painPoints.reduce((acc, item) => acc + item.hours, 0);
 
 export function PainPoints() {
   return (
-    <section className="py-24 relative">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-28 relative overflow-hidden">
+      {/* Background effects */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-destructive/5 to-transparent" />
+      <div className="absolute top-1/2 left-[20%] w-[300px] h-[300px] bg-destructive/10 rounded-full blur-[120px]" />
+      <div className="absolute top-1/2 right-[20%] w-[300px] h-[300px] bg-emerald/10 rounded-full blur-[120px]" />
+
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.5, type: "spring", bounce: 0.3 }}
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+          <motion.div
+            initial={{ scale: 0 }}
+            whileInView={{ scale: 1 }}
+            transition={{ delay: 0.1, type: "spring", bounce: 0.5 }}
+            viewport={{ once: true }}
+          >
+            <Badge
+              variant="outline"
+              className="mb-6 px-5 py-3 text-base border-3 border-destructive/50 bg-destructive/10 rounded-full cartoon-shadow-sm"
+            >
+              <Skull className="w-5 h-5 mr-2 text-destructive float" />
+              <span className="font-bold text-destructive">El ciclo infinito</span>
+            </Badge>
+          </motion.div>
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6">
             ¿Cuántas horas pierdes configurando{" "}
             <span className="text-gradient">lo mismo</span>?
           </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-xl max-w-2xl mx-auto">
             Cada nuevo proyecto significa repetir las mismas tareas aburridas.
-            Tiempo que podrías invertir en construir tu producto.
+            <br />
+            <span className="text-foreground font-semibold">Tiempo que podrías invertir en construir tu producto.</span>
           </p>
         </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          {/* Pain Points List */}
+        <div className="grid md:grid-cols-2 gap-8 lg:gap-12 items-stretch">
+          {/* Pain Points List - THE BAD */}
           <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
+            initial={{ opacity: 0, x: -30, rotate: -1 }}
+            whileInView={{ opacity: 1, x: 0, rotate: 0 }}
+            transition={{ duration: 0.5, type: "spring", bounce: 0.3 }}
             viewport={{ once: true }}
-            className="glass rounded-2xl p-8"
+            className="glass-card p-8 bg-destructive/5 border-destructive/20 relative"
           >
-            <div className="flex items-center gap-2 mb-6 text-destructive">
-              <Clock className="w-5 h-5" />
-              <span className="font-semibold">Sin EmpiezaTuSaaS</span>
-            </div>
+            {/* Danger glow */}
+            <div className="absolute inset-0 bg-gradient-to-br from-destructive/10 to-transparent rounded-3xl" />
 
-            <div className="space-y-4">
-              {painPoints.map((item, index) => (
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-8">
                 <motion.div
-                  key={item.task}
-                  initial={{ opacity: 0, x: -10 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  className="flex items-center justify-between py-3 border-b border-border/50 last:border-0"
+                  className="w-14 h-14 rounded-2xl bg-destructive/20 border-3 border-destructive/40 flex items-center justify-center"
+                  animate={{ rotate: [0, -5, 5, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
                 >
-                  <span className="text-muted-foreground">{item.task}</span>
-                  <span className="font-mono text-destructive font-medium">
-                    {item.hours}h
+                  <Clock className="w-7 h-7 text-destructive" />
+                </motion.div>
+                <div>
+                  <h3 className="text-xl font-black text-destructive">Sin EmpiezaTuSaaS</h3>
+                  <p className="text-sm text-muted-foreground">El camino largo y doloroso</p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {painPoints.map((item, index) => {
+                  const Icon = item.icon;
+                  return (
+                    <motion.div
+                      key={item.task}
+                      initial={{ opacity: 0, x: -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.1 }}
+                      viewport={{ once: true }}
+                      whileHover={{ x: 5, scale: 1.02 }}
+                      className="flex items-center justify-between py-4 px-4 rounded-xl bg-background/50 border-2 border-destructive/20 hover:border-destructive/40 transition-all group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-destructive/15 flex items-center justify-center group-hover:bg-destructive/25 transition-colors">
+                          <Icon className="w-5 h-5 text-destructive/80" />
+                        </div>
+                        <span className="text-foreground/80 font-medium">{item.task}</span>
+                      </div>
+                      <motion.div
+                        className="flex items-center gap-2 bg-destructive/20 px-3 py-1.5 rounded-full"
+                        whileHover={{ scale: 1.1 }}
+                      >
+                        <span className="font-mono text-lg text-destructive font-black">
+                          {item.hours}h
+                        </span>
+                      </motion.div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              {/* Total */}
+              <motion.div
+                className="mt-6 pt-6 border-t-3 border-destructive/30 flex items-center justify-between"
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.6 }}
+                viewport={{ once: true }}
+              >
+                <span className="font-black text-xl text-foreground">Total perdido:</span>
+                <motion.div
+                  className="flex items-center gap-2 bg-destructive/30 px-5 py-3 rounded-2xl border-3 border-destructive/50"
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <Skull className="w-6 h-6 text-destructive" />
+                  <span className="font-mono text-3xl text-destructive font-black">
+                    {totalHours}h+
                   </span>
                 </motion.div>
-              ))}
-            </div>
-
-            <div className="mt-6 pt-6 border-t border-border flex items-center justify-between">
-              <span className="font-semibold text-lg">Total:</span>
-              <span className="font-mono text-2xl text-destructive font-bold">
-                {totalHours}+ horas
-              </span>
+              </motion.div>
             </div>
           </motion.div>
 
-          {/* Solution */}
+          {/* Solution - THE GOOD */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            initial={{ opacity: 0, x: 30, rotate: 1 }}
+            whileInView={{ opacity: 1, x: 0, rotate: 0 }}
+            transition={{ duration: 0.5, delay: 0.2, type: "spring", bounce: 0.3 }}
             viewport={{ once: true }}
-            className="text-center md:text-left"
+            className="glass-card p-8 bg-emerald/5 border-emerald/20 relative"
           >
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/20 mb-6">
-              <ArrowDown className="w-6 h-6 text-primary" />
-            </div>
+            {/* Success glow */}
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald/10 to-transparent rounded-3xl" />
 
-            <h3 className="text-2xl sm:text-3xl font-bold mb-4">
-              Hay una forma más fácil
-            </h3>
-
-            <div className="glass rounded-xl p-6 mb-6">
-              <pre className="font-mono text-lg">
-                <code>
-                  <span className="text-muted-foreground">const</span>{" "}
-                  <span className="text-foreground">launch_time</span>{" "}
-                  <span className="text-muted-foreground">=</span>{" "}
-                  <span className="text-primary">&apos;Hoy&apos;</span>
-                  <span className="text-muted-foreground">;</span>
-                </code>
-              </pre>
-            </div>
-
-            <div className="space-y-3">
-              {[
-                "Autenticación lista en minutos",
-                "Pagos con Stripe integrados",
-                "Emails configurados",
-                "Dashboard profesional",
-                "SEO optimizado desde el día 1",
-              ].map((item, index) => (
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-8">
                 <motion.div
-                  key={item}
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
-                  viewport={{ once: true }}
-                  className="flex items-center gap-3"
+                  className="w-14 h-14 rounded-2xl bg-emerald/20 border-3 border-emerald/40 flex items-center justify-center"
+                  animate={{ rotate: [0, 5, -5, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
                 >
-                  <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />
-                  <span className="text-muted-foreground">{item}</span>
+                  <Rocket className="w-7 h-7 text-emerald" />
                 </motion.div>
-              ))}
+                <div>
+                  <h3 className="text-xl font-black text-emerald">Con EmpiezaTuSaaS</h3>
+                  <p className="text-sm text-muted-foreground">El atajo del héroe</p>
+                </div>
+              </div>
+
+              {/* Code block */}
+              <motion.div
+                className="glass-card p-5 mb-6 bg-background/80 border-emerald/30"
+                whileHover={{ scale: 1.02 }}
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-3 h-3 rounded-full bg-destructive" />
+                  <div className="w-3 h-3 rounded-full bg-gold" />
+                  <div className="w-3 h-3 rounded-full bg-emerald" />
+                  <span className="ml-3 text-xs text-muted-foreground font-mono">magic.ts</span>
+                </div>
+                <pre className="font-mono text-lg">
+                  <code>
+                    <span className="text-muted-foreground">const</span>{" "}
+                    <span className="text-emerald font-bold">launch_time</span>{" "}
+                    <span className="text-muted-foreground">=</span>{" "}
+                    <span className="text-gold font-bold">&apos;Hoy&apos;</span>
+                    <span className="text-muted-foreground">;</span>
+                  </code>
+                </pre>
+              </motion.div>
+
+              {/* Solutions list */}
+              <div className="space-y-3">
+                {solutions.map((item, index) => {
+                  const Icon = item.icon;
+                  return (
+                    <motion.div
+                      key={item.text}
+                      initial={{ opacity: 0, x: 20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: 0.4 + index * 0.1 }}
+                      viewport={{ once: true }}
+                      whileHover={{ x: -5, scale: 1.02 }}
+                      className="flex items-center gap-3 py-3 px-4 rounded-xl bg-background/50 border-2 border-emerald/20 hover:border-emerald/40 transition-all group"
+                    >
+                      <motion.div
+                        className="w-10 h-10 rounded-xl bg-emerald/20 flex items-center justify-center group-hover:bg-emerald/30 transition-colors"
+                        whileHover={{ rotate: [0, -10, 10, 0] }}
+                      >
+                        <Icon className="w-5 h-5 text-emerald" />
+                      </motion.div>
+                      <span className="text-foreground font-medium flex-1">{item.text}</span>
+                      <CheckCircle2 className="w-6 h-6 text-emerald" />
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              {/* Time saved */}
+              <motion.div
+                className="mt-6 pt-6 border-t-3 border-emerald/30 flex items-center justify-between"
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.8 }}
+                viewport={{ once: true }}
+              >
+                <span className="font-black text-xl text-foreground">Tiempo real:</span>
+                <motion.div
+                  className="flex items-center gap-2 bg-emerald/30 px-5 py-3 rounded-2xl border-3 border-emerald/50"
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                >
+                  <Zap className="w-6 h-6 text-emerald" />
+                  <span className="font-mono text-3xl text-emerald font-black">
+                    5min
+                  </span>
+                </motion.div>
+              </motion.div>
             </div>
           </motion.div>
         </div>
+
+        {/* Bottom CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          viewport={{ once: true }}
+          className="mt-16 text-center"
+        >
+          <div className="inline-flex items-center gap-4 bg-background/60 backdrop-blur-sm px-8 py-5 rounded-2xl border-3 border-primary/30 cartoon-shadow">
+            <Trophy className="w-8 h-8 text-gold" />
+            <div className="text-left">
+              <p className="text-2xl font-black">
+                Ahorra <span className="text-gradient">{totalHours - 5}+ horas</span> en cada proyecto
+              </p>
+              <p className="text-muted-foreground">Tiempo que puedes invertir en lo que realmente importa</p>
+            </div>
+            <Sparkles className="w-8 h-8 text-primary float" />
+          </div>
+        </motion.div>
       </div>
     </section>
   );

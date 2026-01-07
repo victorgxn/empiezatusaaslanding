@@ -106,10 +106,7 @@ export function Hero() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.5 }}
           >
-            El boilerplate NextJS que te ahorra{" "}
-            <span className="text-foreground font-bold bg-primary/30 px-3 py-1 rounded-xl backdrop-blur-sm">3 meses</span>{" "}
-            de desarrollo y te da las armas para conquistar tu{" "}
-            <span className="text-primary font-bold drop-shadow-md">primer MRR</span>
+            El boilerplate NextJS que te ahorra <span className="text-destructive font-black underline decoration-destructive decoration-4 underline-offset-4">3 meses</span> de desarrollo y te da las armas para conquistar tu <span className="text-gold font-black underline decoration-gold decoration-4 underline-offset-4">primer € online</span>
           </motion.p>
 
           {/* CTA Buttons */}
@@ -159,7 +156,7 @@ export function Hero() {
               </div>
               <span className="flex items-center gap-2">
                 <Users className="w-5 h-5 text-primary" />
-                <span className="font-black text-foreground text-xl">+500</span>
+                <span className="font-black text-foreground text-xl">+20</span>
                 <span className="text-muted-foreground">builders</span>
               </span>
             </div>
@@ -196,13 +193,13 @@ export function Hero() {
             <pre className="font-mono text-base sm:text-lg overflow-x-auto leading-relaxed">
               <code>
                 <span className="text-muted-foreground">$</span>{" "}
-                <span className="text-emerald font-bold">npx</span>{" "}
-                <span className="text-foreground">create-empiezatusaas</span>{" "}
-                <span className="text-primary font-bold">mi-saas</span>
+                <span className="text-emerald font-bold">git</span>{" "}
+                <span className="text-foreground">clone</span>{" "}
+                <span className="text-primary font-bold">empiezatusaas</span>
                 {"\n"}
                 <span className="text-muted-foreground">$</span>{" "}
                 <span className="text-emerald font-bold">cd</span>{" "}
-                <span className="text-foreground">mi-saas</span>
+                <span className="text-foreground">empiezatusaas</span>
                 {"\n"}
                 <span className="text-muted-foreground">$</span>{" "}
                 <span className="text-emerald font-bold">npm</span>{" "}

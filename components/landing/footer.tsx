@@ -120,8 +120,15 @@ export function Footer() {
             © {new Date().getFullYear()} EmpiezaTuSaaS. Todos los derechos reservados.
           </p>
           <p className="text-sm text-muted-foreground">
-            Hecho con{" "}
-            <span className="text-primary">♥</span> para builders
+            Construido con ☕️ y 🧡 por{" "}
+            <a
+              href="https://victorgxn.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline font-medium"
+            >
+              victorgxn
+            </a>
           </p>
         </div>
       </div>

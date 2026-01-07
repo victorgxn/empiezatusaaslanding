@@ -3,14 +3,14 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Tent, Castle, Flame, Shield, Crown, Users, BookOpen, Swords, type LucideIcon } from "lucide-react";
+import { Check, Shield, Crown, Users, BookOpen, Swords, type LucideIcon } from "lucide-react";
 import Image from "next/image";
 
 const tiers = [
   {
     id: "solo",
     name: "Solo Quest",
-    icon: Tent,
+    icon: "/pricing/solo-quest.webp",
     price: 199,
     description: "Todo lo que necesitas para lanzar tu primer SaaS. El código, las herramientas, la magia.",
     tagline: "La aventura en solitario",
@@ -33,7 +33,7 @@ const tiers = [
   {
     id: "guild",
     name: "Guild Pass",
-    icon: Castle,
+    icon: "/pricing/guild-pass.webp",
     price: 249,
     description: "Únete al gremio de builders. No estás solo en esta aventura.",
     tagline: "Acceso al gremio de builders",
@@ -56,7 +56,7 @@ const tiers = [
   {
     id: "dragon",
     name: "Dragon Slayer",
-    icon: Flame,
+    icon: "/pricing/dragon-slayer.webp",
     price: 299,
     description: "El camino completo del héroe. Desde cero hasta tu primer MRR.",
     tagline: "El héroe que domina todo",
@@ -146,7 +146,6 @@ export function Pricing() {
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
           {tiers.map((tier, index) => {
-            const Icon = tier.icon;
             const colorMap = {
               primary: {
                 icon: "text-primary bg-primary/20",
@@ -201,11 +200,17 @@ export function Pricing() {
                 <div className="mb-8">
                   <div className="flex items-center gap-4 mb-4">
                     <motion.div
-                      className={`w-16 h-16 rounded-2xl flex items-center justify-center ${colorClasses.icon} border-3`}
+                      className="w-16 h-16 rounded-2xl overflow-hidden"
                       whileHover={{ rotate: [0, -10, 10, 0], scale: 1.1 }}
                       transition={{ duration: 0.4 }}
                     >
-                      <Icon className="w-8 h-8" />
+                      <Image
+                        src={tier.icon}
+                        alt={tier.name}
+                        width={64}
+                        height={64}
+                        className="w-full h-full object-contain"
+                      />
                     </motion.div>
                     <div>
                       <h3 className="text-2xl font-black">{tier.name}</h3>
@@ -315,7 +320,7 @@ export function Pricing() {
           </div>
           <div className="flex items-center gap-2">
             <Users className="w-5 h-5 text-emerald" />
-            <span>+500 builders confían en nosotros</span>
+            <span>+20 builders confían en nosotros</span>
           </div>
         </motion.div>
 

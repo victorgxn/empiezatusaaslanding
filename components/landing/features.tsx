@@ -31,12 +31,14 @@ const features = [
       "Protección de rutas automática",
       "Gestión de sesiones segura",
     ],
-    code: `// app/api/auth/[...nextauth]/route.ts
-import NextAuth from "next-auth"
-import { authOptions } from "@/lib/auth"
+    code: `// lib/auth.ts
+import { betterAuth } from "better-auth"
+import { prismaAdapter } from "better-auth/adapters/prisma"
 
-const handler = NextAuth(authOptions)
-export { handler as GET, handler as POST }`,
+export const auth = betterAuth({
+  database: prismaAdapter(prisma),
+  emailAndPassword: { enabled: true },
+})`,
   },
   {
     id: "payments",

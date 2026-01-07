@@ -1,55 +1,54 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const technologies = [
   {
     name: "Next.js 15",
     description: "React framework",
-    icon: "N",
-    color: "from-white to-gray-400",
+    icon: "/tecnologias/nextjs.webp",
   },
   {
     name: "TypeScript",
     description: "Type safety",
-    icon: "TS",
-    color: "from-blue-400 to-blue-600",
+    icon: "/tecnologias/typescript.webp",
   },
   {
     name: "Tailwind CSS",
     description: "Styling",
-    icon: "Tw",
-    color: "from-cyan-400 to-cyan-600",
+    icon: "/tecnologias/tailwind.webp",
   },
   {
     name: "Shadcn/ui",
     description: "UI Components",
-    icon: "UI",
-    color: "from-white to-gray-400",
+    icon: "/tecnologias/shadcn.webp",
   },
   {
     name: "Prisma",
     description: "Database ORM",
-    icon: "P",
-    color: "from-teal-400 to-teal-600",
+    icon: "/tecnologias/prisma.webp",
   },
   {
     name: "Stripe",
     description: "Payments",
-    icon: "S",
-    color: "from-purple-400 to-purple-600",
+    icon: "/tecnologias/stripe.webp",
   },
   {
-    name: "NextAuth",
+    name: "Better Auth",
     description: "Authentication",
-    icon: "A",
-    color: "from-green-400 to-green-600",
+    icon: "/tecnologias/better-auth.webp",
   },
   {
     name: "Resend",
     description: "Emails",
-    icon: "R",
-    color: "from-pink-400 to-pink-600",
+    icon: "/tecnologias/resend.webp",
   },
 ];
 
@@ -88,10 +87,14 @@ export function TechStack() {
               whileHover={{ scale: 1.05, y: -5 }}
               className="glass rounded-xl p-6 text-center group cursor-default"
             >
-              <div
-                className={`w-14 h-14 mx-auto mb-4 rounded-xl bg-gradient-to-br ${tech.color} flex items-center justify-center text-xl font-bold text-background group-hover:scale-110 transition-transform`}
-              >
-                {tech.icon}
+              <div className="w-14 h-14 mx-auto mb-4 rounded-md overflow-hidden group-hover:scale-110 transition-transform">
+                <Image
+                  src={tech.icon}
+                  alt={tech.name}
+                  width={56}
+                  height={56}
+                  className="w-full h-full object-contain"
+                />
               </div>
               <h3 className="font-semibold mb-1">{tech.name}</h3>
               <p className="text-sm text-muted-foreground">{tech.description}</p>
@@ -107,25 +110,38 @@ export function TechStack() {
           viewport={{ once: true }}
           className="mt-16 text-center"
         >
-          <div className="glass rounded-2xl p-8 max-w-2xl mx-auto">
-            <h3 className="text-xl font-semibold mb-4">
-              Construido para la era de AI
-            </h3>
-            <p className="text-muted-foreground mb-6">
-              Código limpio y bien estructurado, optimizado para trabajar con
-              asistentes de código AI.
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-4">
-              {["Cursor", "Claude", "ChatGPT", "v0.dev"].map((tool) => (
-                <div
-                  key={tool}
-                  className="px-4 py-2 rounded-full bg-secondary text-sm font-medium"
-                >
-                  {tool}
-                </div>
+          <TooltipProvider delayDuration={100}>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <span className="text-muted-foreground font-medium">Compatible con</span>
+              {[
+                { name: "Cursor", icon: "/ia/cursor.webp" },
+                { name: "Claude", icon: "/ia/claude.webp" },
+                { name: "ChatGPT", icon: "/ia/chatgpt.webp" },
+                { name: "Copilot", icon: "/ia/copilot.webp" },
+                { name: "Windsurf", icon: "/ia/windsurf.webp" },
+              ].map((tool) => (
+                <Tooltip key={tool.name}>
+                  <TooltipTrigger asChild>
+                    <motion.div
+                      whileHover={{ scale: 1.15 }}
+                      className="w-10 h-10 rounded-lg overflow-hidden border border-border/50 bg-background/50 p-1 hover:border-primary/50 transition-colors cursor-pointer"
+                    >
+                      <Image
+                        src={tool.icon}
+                        alt={tool.name}
+                        width={40}
+                        height={40}
+                        className="w-full h-full object-contain"
+                      />
+                    </motion.div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{tool.name}</p>
+                  </TooltipContent>
+                </Tooltip>
               ))}
             </div>
-          </div>
+          </TooltipProvider>
         </motion.div>
       </div>
     </section>
