@@ -1,43 +1,46 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Montserrat, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-geist-sans",
+const montserrat = Montserrat({
+  variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
 const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-geist-mono",
+  variable: "--font-mono",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "ShipFast - Lanza tu SaaS en un fin de semana",
+  title: "EmpiezaTuSaaS - Tu aventura hacia el Indie Hacking",
   description:
-    "El boilerplate NextJS con todo lo que necesitas para lanzar tu SaaS, herramienta AI, o web app y facturar online rápido.",
+    "El boilerplate NextJS que te ahorra 3 meses de desarrollo. Lanza tu SaaS, herramienta AI, o web app y conquista tu primer MRR.",
   keywords: [
     "NextJS boilerplate",
     "SaaS starter kit",
     "Next.js template",
     "SaaS boilerplate",
-    "React boilerplate",
+    "Indie hacking",
     "Stripe integration",
-    "NextAuth",
+    "Lemon Squeezy",
+    "MongoDB",
+    "Supabase",
   ],
-  authors: [{ name: "ShipFast" }],
+  authors: [{ name: "EmpiezaTuSaaS" }],
   openGraph: {
-    title: "ShipFast - Lanza tu SaaS en un fin de semana",
+    title: "EmpiezaTuSaaS - Tu aventura hacia el Indie Hacking",
     description:
-      "El boilerplate NextJS con todo lo que necesitas para lanzar tu SaaS, herramienta AI, o web app y facturar online rápido.",
+      "El boilerplate NextJS que te ahorra 3 meses de desarrollo. Lanza tu SaaS y conquista tu primer MRR.",
     type: "website",
     locale: "es_ES",
   },
   twitter: {
     card: "summary_large_image",
-    title: "ShipFast - Lanza tu SaaS en un fin de semana",
+    title: "EmpiezaTuSaaS - Tu aventura hacia el Indie Hacking",
     description:
-      "El boilerplate NextJS con todo lo que necesitas para lanzar tu SaaS, herramienta AI, o web app y facturar online rápido.",
+      "El boilerplate NextJS que te ahorra 3 meses de desarrollo. Lanza tu SaaS y conquista tu primer MRR.",
   },
 };
 
@@ -49,7 +52,7 @@ export default function RootLayout({
   return (
     <html lang="es" className="dark">
       <body
-        className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+        className={`${montserrat.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
         {children}
       </body>

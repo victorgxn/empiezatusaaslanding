@@ -70,7 +70,7 @@ export function Testimonials() {
             <span className="text-gradient">usuarios</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            +500 developers ya están construyendo sus SaaS con ShipFast
+            +500 builders ya están en la expedición con EmpiezaTuSaaS
           </p>
         </motion.div>
 
@@ -91,7 +91,7 @@ export function Testimonials() {
                 {[1, 2, 3, 4, 5].map((star) => (
                   <Star
                     key={star}
-                    className="w-4 h-4 fill-primary text-primary"
+                    className="w-4 h-4 fill-gold text-gold"
                   />
                 ))}
               </div>
@@ -133,7 +133,7 @@ export function Testimonials() {
           className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-8"
         >
           {[
-            { value: "500+", label: "Developers" },
+            { value: "500+", label: "Builders en el gremio" },
             { value: "$2.5M+", label: "Revenue generado" },
             { value: "4.9/5", label: "Rating promedio" },
             { value: "50+", label: "Países" },

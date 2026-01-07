@@ -46,7 +46,7 @@ export function PainPoints() {
           >
             <div className="flex items-center gap-2 mb-6 text-destructive">
               <Clock className="w-5 h-5" />
-              <span className="font-semibold">Sin ShipFast</span>
+              <span className="font-semibold">Sin EmpiezaTuSaaS</span>
             </div>
 
             <div className="space-y-4">

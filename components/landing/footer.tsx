@@ -1,6 +1,6 @@
 "use client";
 
-import { Rocket, Twitter, Github, Mail } from "lucide-react";
+import { Sword, Twitter, Github, Mail } from "lucide-react";
 
 const footerLinks = {
   product: [
@@ -30,30 +30,32 @@ export function Footer() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <a href="#" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <Rocket className="w-5 h-5 text-primary-foreground" />
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary to-gold flex items-center justify-center shadow-lg">
+                <Sword className="w-5 h-5 text-white" />
               </div>
-              <span className="font-bold text-lg">ShipFast</span>
+              <span className="font-bold text-lg">
+                Empieza<span className="text-primary">Tu</span>SaaS
+              </span>
             </a>
             <p className="text-sm text-muted-foreground mb-4">
-              El boilerplate NextJS para lanzar tu SaaS rápido.
+              Tu aventura hacia el indie hacking empieza aquí.
             </p>
             <div className="flex gap-4">
               <a
                 href="#"
-                className="text-muted-foreground hover:text-foreground transition-colors"
+                className="text-muted-foreground hover:text-primary transition-colors"
               >
                 <Twitter className="w-5 h-5" />
               </a>
               <a
                 href="#"
-                className="text-muted-foreground hover:text-foreground transition-colors"
+                className="text-muted-foreground hover:text-primary transition-colors"
               >
                 <Github className="w-5 h-5" />
               </a>
               <a
                 href="#"
-                className="text-muted-foreground hover:text-foreground transition-colors"
+                className="text-muted-foreground hover:text-primary transition-colors"
               >
                 <Mail className="w-5 h-5" />
               </a>
@@ -115,7 +117,7 @@ export function Footer() {
         {/* Bottom */}
         <div className="pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} ShipFast. Todos los derechos reservados.
+            © {new Date().getFullYear()} EmpiezaTuSaaS. Todos los derechos reservados.
           </p>
           <p className="text-sm text-muted-foreground">
             Hecho con{" "}

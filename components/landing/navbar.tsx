@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Rocket } from "lucide-react";
+import { Menu, X, Sword } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -34,10 +34,12 @@ export function Navbar() {
       <nav className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <a href="#" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Rocket className="w-5 h-5 text-primary-foreground" />
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary to-gold flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
+              <Sword className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-lg">ShipFast</span>
+            <span className="font-bold text-lg">
+              Empieza<span className="text-primary">Tu</span>SaaS
+            </span>
           </a>
 
           <div className="hidden md:flex items-center gap-8">
@@ -57,7 +59,7 @@ export function Navbar() {
               Login
             </Button>
             <Button size="sm" className="glow-sm">
-              Get Started
+              Comenzar
             </Button>
           </div>
 
@@ -90,7 +92,7 @@ export function Navbar() {
                 <Button variant="ghost" size="sm">
                   Login
                 </Button>
-                <Button size="sm">Get Started</Button>
+                <Button size="sm">Comenzar</Button>
               </div>
             </div>
           </div>
