@@ -1,0 +1,517 @@
+---
+title: Crear Posts
+description: Escribe artículos con MDX, componentes React y sintaxis avanzada
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+# Crear Posts
+
+Aprende a escribir artículos para tu blog usando MDX, que combina Markdown con componentes React.
+
+## Estructura de un post
+
+Cada post es un archivo `.mdx` en la carpeta `content/blog/`:
+
+```mdx title="content/blog/mi-articulo.mdx"
+---
+title: Cómo lanzar tu SaaS en 7 días
+description: Una guía paso a paso para ir de idea a producto lanzado
+date: 2024-01-15
+author:
+  name: Tu Nombre
+  avatar: /authors/tu-nombre.jpg
+  twitter: "@tunombre"
+category: tutorial
+tags: [saas, lanzamiento, indie-hacking]
+image: /blog/lanzar-saas.jpg
+imageAlt: Desarrollador trabajando en su SaaS
+published: true
+---
+
+# Cómo lanzar tu SaaS en 7 días
+
+Tu contenido aquí...
+```
+
+## Frontmatter (metadatos)
+
+El frontmatter define los metadatos del post. Todos los campos disponibles:
+
+| Campo | Tipo | Requerido | Descripción |
+|-------|------|-----------|-------------|
+| `title` | string | ✅ | Título del artículo |
+| `description` | string | ✅ | Descripción para SEO (150-160 caracteres) |
+| `date` | string | ✅ | Fecha de publicación (YYYY-MM-DD) |
+| `author` | object | ✅ | Información del autor |
+| `author.name` | string | ✅ | Nombre del autor |
+| `author.avatar` | string | ❌ | URL de la imagen del autor |
+| `author.twitter` | string | ❌ | Handle de Twitter |
+| `author.bio` | string | ❌ | Biografía corta |
+| `category` | string | ✅ | Categoría principal |
+| `tags` | string[] | ❌ | Lista de tags |
+| `image` | string | ❌ | Imagen destacada |
+| `imageAlt` | string | ❌ | Alt text de la imagen |
+| `published` | boolean | ❌ | Si está publicado (default: true) |
+
+### Ejemplo de frontmatter completo
+
+```yaml
+---
+title: "Guía completa de Stripe para SaaS"
+description: "Aprende a integrar pagos con Stripe en tu SaaS: checkout, suscripciones, webhooks y más"
+date: 2024-02-20
+author:
+  name: María García
+  avatar: /authors/maria.jpg
+  twitter: "@mariadev"
+  bio: "Desarrolladora full-stack y creadora de SaaS"
+category: pagos
+tags:
+  - stripe
+  - pagos
+  - suscripciones
+  - webhooks
+image: /blog/stripe-saas.jpg
+imageAlt: Dashboard de Stripe con gráficos de ingresos
+published: true
+---
+```
+
+## Sintaxis Markdown
+
+### Headings
+
+```markdown
+# H1 - Solo para el título principal (generado automáticamente)
+## H2 - Secciones principales
+### H3 - Subsecciones
+#### H4 - Detalles
+```
+
+<Callout type="info">
+  Los headings H2 y H3 aparecen automáticamente en la tabla de contenidos.
+</Callout>
+
+### Texto
+
+```markdown
+**Negrita** o __negrita__
+*Itálica* o _itálica_
+~~Tachado~~
+`código inline`
+[Link](https://ejemplo.com)
+```
+
+### Listas
+
+```markdown
+- Item 1
+- Item 2
+  - Sub-item 2.1
+  - Sub-item 2.2
+
+1. Primer paso
+2. Segundo paso
+3. Tercer paso
+```
+
+### Citas
+
+```markdown
+> Esta es una cita importante que quieres destacar.
+>
+> — Autor de la cita
+```
+
+### Tablas
+
+```markdown
+| Característica | Plan Free | Plan Pro |
+|----------------|-----------|----------|
+| Usuarios | 1 | Ilimitados |
+| Proyectos | 3 | Ilimitados |
+| Soporte | Email | Prioritario |
+```
+
+## Bloques de código
+
+### Código básico
+
+````markdown
+```javascript
+const greeting = "Hola mundo";
+console.log(greeting);
+```
+````
+
+### Con título de archivo
+
+````markdown
+```typescript title="lib/stripe.ts"
+import Stripe from 'stripe';
+
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2023-10-16',
+});
+```
+````
+
+### Resaltando líneas
+
+````markdown
+```typescript title="app/api/webhook/route.ts" {4-6}
+export async function POST(req: Request) {
+  const body = await req.text();
+
+  // Estas líneas están resaltadas
+  const signature = req.headers.get('stripe-signature')!;
+  const event = stripe.webhooks.constructEvent(body, signature, secret);
+
+  return new Response('OK');
+}
+```
+````
+
+### Múltiples lenguajes
+
+<Tabs items={['TypeScript', 'JavaScript', 'Python']}>
+  <Tab value="TypeScript">
+    ```typescript
+    const sum = (a: number, b: number): number => a + b;
+    ```
+  </Tab>
+  <Tab value="JavaScript">
+    ```javascript
+    const sum = (a, b) => a + b;
+    ```
+  </Tab>
+  <Tab value="Python">
+    ```python
+    def sum(a, b):
+        return a + b
+    ```
+  </Tab>
+</Tabs>
+
+## Componentes MDX
+
+MDX permite usar componentes React dentro del Markdown. Crea componentes personalizados para tu blog:
+
+### Componente Callout
+
+```typescript title="components/blog/mdx/callout.tsx"
+interface CalloutProps {
+  type?: 'info' | 'warning' | 'error' | 'success';
+  title?: string;
+  children: React.ReactNode;
+}
+
+export function Callout({ type = 'info', title, children }: CalloutProps) {
+  const styles = {
+    info: 'bg-blue-500/10 border-blue-500 text-blue-500',
+    warning: 'bg-yellow-500/10 border-yellow-500 text-yellow-500',
+    error: 'bg-red-500/10 border-red-500 text-red-500',
+    success: 'bg-green-500/10 border-green-500 text-green-500',
+  };
+
+  return (
+    <div className={`p-4 rounded-lg border-l-4 my-6 ${styles[type]}`}>
+      {title && <p className="font-semibold mb-2">{title}</p>}
+      <div className="text-foreground">{children}</div>
+    </div>
+  );
+}
+```
+
+### Componente YouTube
+
+```typescript title="components/blog/mdx/youtube.tsx"
+interface YouTubeProps {
+  id: string;
+  title?: string;
+}
+
+export function YouTube({ id, title = 'Video de YouTube' }: YouTubeProps) {
+  return (
+    <div className="relative aspect-video my-8 rounded-xl overflow-hidden">
+      <iframe
+        src={`https://www.youtube.com/embed/${id}`}
+        title={title}
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+        className="absolute inset-0 w-full h-full"
+      />
+    </div>
+  );
+}
+```
+
+### Componente Tweet
+
+```typescript title="components/blog/mdx/tweet.tsx"
+interface TweetProps {
+  id: string;
+}
+
+export function Tweet({ id }: TweetProps) {
+  return (
+    <div className="my-8 flex justify-center">
+      <blockquote className="twitter-tweet">
+        <a href={`https://twitter.com/x/status/${id}`}>Loading tweet...</a>
+      </blockquote>
+      <script async src="https://platform.twitter.com/widgets.js" />
+    </div>
+  );
+}
+```
+
+### Componente CodeComparison
+
+```typescript title="components/blog/mdx/code-comparison.tsx"
+interface CodeComparisonProps {
+  before: string;
+  after: string;
+  language?: string;
+}
+
+export function CodeComparison({
+  before,
+  after,
+  language = 'typescript',
+}: CodeComparisonProps) {
+  return (
+    <div className="grid md:grid-cols-2 gap-4 my-8">
+      <div>
+        <div className="text-sm font-semibold text-red-500 mb-2 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-red-500" />
+          Antes
+        </div>
+        <pre className="p-4 rounded-lg bg-red-500/5 border border-red-500/20 overflow-x-auto">
+          <code>{before}</code>
+        </pre>
+      </div>
+      <div>
+        <div className="text-sm font-semibold text-green-500 mb-2 flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-green-500" />
+          Después
+        </div>
+        <pre className="p-4 rounded-lg bg-green-500/5 border border-green-500/20 overflow-x-auto">
+          <code>{after}</code>
+        </pre>
+      </div>
+    </div>
+  );
+}
+```
+
+### Registrar componentes MDX
+
+```typescript title="components/blog/mdx-content.tsx"
+import { MDXRemote } from 'next-mdx-remote/rsc';
+import { Callout } from './mdx/callout';
+import { YouTube } from './mdx/youtube';
+import { Tweet } from './mdx/tweet';
+import { CodeComparison } from './mdx/code-comparison';
+import Image from 'next/image';
+import Link from 'next/link';
+
+const components = {
+  // Componentes personalizados
+  Callout,
+  YouTube,
+  Tweet,
+  CodeComparison,
+
+  // Sobrescribir elementos nativos
+  img: (props: any) => (
+    <Image
+      {...props}
+      width={800}
+      height={400}
+      className="rounded-xl my-8"
+      alt={props.alt || ''}
+    />
+  ),
+  a: (props: any) => {
+    const isExternal = props.href?.startsWith('http');
+    if (isExternal) {
+      return (
+        <a {...props} target="_blank" rel="noopener noreferrer">
+          {props.children}
+        </a>
+      );
+    }
+    return <Link {...props}>{props.children}</Link>;
+  },
+};
+
+interface MDXContentProps {
+  content: string;
+}
+
+export function MDXContent({ content }: MDXContentProps) {
+  return <MDXRemote source={content} components={components} />;
+}
+```
+
+### Usar componentes en posts
+
+```mdx title="content/blog/mi-post.mdx"
+---
+title: Mi post con componentes
+---
+
+# Usando componentes MDX
+
+<Callout type="info" title="Nota importante">
+  Este es un callout informativo que destaca información importante.
+</Callout>
+
+## Video tutorial
+
+<YouTube id="dQw4w9WgXcQ" title="Tutorial de Next.js" />
+
+## Comparación de código
+
+<CodeComparison
+  before="const data = fetch(url).then(r => r.json())"
+  after="const data = await fetch(url).then(r => r.json())"
+/>
+
+## Tweet relevante
+
+<Tweet id="1234567890" />
+```
+
+## Imágenes
+
+### Imágenes en el contenido
+
+```markdown
+![Descripción de la imagen](/blog/images/mi-imagen.jpg)
+```
+
+### Con componente Image de Next.js
+
+```mdx
+import Image from 'next/image';
+
+<Image
+  src="/blog/images/dashboard.jpg"
+  alt="Dashboard de la aplicación"
+  width={800}
+  height={450}
+  className="rounded-xl"
+/>
+```
+
+### Organización de imágenes
+
+```
+public/
+└── blog/
+    ├── mi-post/
+    │   ├── hero.jpg
+    │   ├── screenshot-1.jpg
+    │   └── screenshot-2.jpg
+    └── otro-post/
+        └── hero.jpg
+```
+
+## Borradores
+
+Para crear un borrador que no se publique, usa `published: false`:
+
+```yaml
+---
+title: Artículo en progreso
+published: false
+---
+```
+
+Los borradores:
+- No aparecen en la lista de posts
+- No se incluyen en el sitemap
+- No se indexan en Google
+- Solo son accesibles con la URL directa en desarrollo
+
+## Plantilla de post
+
+Crea una plantilla para nuevos posts:
+
+```mdx title="content/blog/_template.mdx"
+---
+title: ""
+description: ""
+date: YYYY-MM-DD
+author:
+  name: Tu Nombre
+  avatar: /authors/tu-nombre.jpg
+category: general
+tags: []
+image: /blog/
+imageAlt: ""
+published: false
+---
+
+# Título del artículo
+
+Introducción que enganche al lector...
+
+## Sección 1
+
+Contenido...
+
+## Sección 2
+
+Contenido...
+
+## Conclusión
+
+Resumen y call to action...
+
+---
+
+**¿Te ha sido útil este artículo?** Compártelo con otros desarrolladores y sígueme en [Twitter](https://twitter.com/tunombre) para más contenido.
+```
+
+## Checklist antes de publicar
+
+<Steps>
+  <Step>
+    ### Revisa el SEO
+    - [ ] Título entre 50-60 caracteres
+    - [ ] Descripción entre 150-160 caracteres
+    - [ ] URL amigable (slug)
+    - [ ] Imagen destacada con alt text
+  </Step>
+
+  <Step>
+    ### Verifica el contenido
+    - [ ] Sin errores ortográficos
+    - [ ] Links funcionan correctamente
+    - [ ] Imágenes cargan bien
+    - [ ] Código tiene syntax highlighting
+  </Step>
+
+  <Step>
+    ### Optimiza rendimiento
+    - [ ] Imágenes comprimidas (WebP preferido)
+    - [ ] Imágenes con dimensiones correctas
+    - [ ] No hay componentes pesados innecesarios
+  </Step>
+
+  <Step>
+    ### Publica
+    - [ ] Cambiar `published: false` a `published: true`
+    - [ ] Verificar fecha de publicación
+    - [ ] Commit y deploy
+  </Step>
+</Steps>
+
+## Siguiente paso
+
+[Aprende a organizar posts con categorías y tags →](/docs/blog/categories)

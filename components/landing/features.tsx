@@ -286,7 +286,7 @@ export function Features() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
           viewport={{ once: true }}
-          className="mt-16 grid sm:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="mt-8 sm:mt-16 grid grid-cols-4 gap-2 sm:gap-4 lg:gap-6"
         >
           {[
             {
@@ -317,17 +317,17 @@ export function Features() {
               whileHover={{ scale: 1.05, rotate: -1 }}
               transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
               viewport={{ once: true }}
-              className="glass-card p-6 text-center bg-background/70 backdrop-blur-md hover:bg-background/80"
+              className="glass-card p-2 sm:p-4 lg:p-6 text-center bg-background/70 backdrop-blur-md hover:bg-background/80"
             >
               <motion.div
-                className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-primary/20 border-2 border-primary/40 flex items-center justify-center"
+                className="w-8 h-8 sm:w-12 sm:h-12 lg:w-14 lg:h-14 mx-auto mb-2 sm:mb-4 rounded-xl sm:rounded-2xl bg-primary/20 border sm:border-2 border-primary/40 flex items-center justify-center"
                 whileHover={{ rotate: [0, -10, 10, 0] }}
                 transition={{ duration: 0.4 }}
               >
-                <item.icon className="w-7 h-7 text-primary" />
+                <item.icon className="w-4 h-4 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-primary" />
               </motion.div>
-              <h4 className="font-black text-lg mb-2">{item.title}</h4>
-              <p className="text-base text-muted-foreground">{item.description}</p>
+              <h4 className="font-black text-xs sm:text-base lg:text-lg mb-1 sm:mb-2 truncate">{item.title}</h4>
+              <p className="text-[10px] sm:text-sm lg:text-base text-muted-foreground hidden sm:block">{item.description}</p>
             </motion.div>
           ))}
         </motion.div>

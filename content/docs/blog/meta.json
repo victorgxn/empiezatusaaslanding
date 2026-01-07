@@ -1,0 +1,11 @@
+{
+  "title": "Blog",
+  "pages": [
+    "index",
+    "setup",
+    "posts",
+    "categories",
+    "rss",
+    "seo-optimization"
+  ]
+}

@@ -1,0 +1,738 @@
+---
+title: SEO para Blog
+description: Optimiza cada artículo para maximizar visibilidad en Google y redes sociales
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+# SEO para Blog
+
+Optimiza cada artículo de tu blog para maximizar la visibilidad en buscadores y redes sociales.
+
+## Checklist SEO por artículo
+
+| Elemento | Requisito | Importancia |
+|----------|-----------|-------------|
+| Título | 50-60 caracteres, keyword al inicio | Alta |
+| Meta descripción | 150-160 caracteres, call to action | Alta |
+| URL (slug) | Corta, descriptiva, con keyword | Alta |
+| H1 | Único, incluye keyword principal | Alta |
+| Imagen destacada | Con alt text descriptivo | Media |
+| Links internos | 2-3 links a otros posts | Media |
+| Links externos | 1-2 links a fuentes autoritativas | Baja |
+| Tiempo de lectura | Mostrar al usuario | UX |
+
+## Metadata dinámico
+
+### Configuración completa
+
+```typescript title="app/blog/[slug]/page.tsx"
+import { Metadata } from 'next';
+import { getPostBySlug } from '@/lib/blog';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tusitio.com';
+const SITE_NAME = 'EmpiezaTuSaaS';
+
+interface Props {
+  params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const post = getPostBySlug(slug);
+
+  if (!post) {
+    return {
+      title: 'Artículo no encontrado',
+      robots: { index: false },
+    };
+  }
+
+  const url = `${SITE_URL}/blog/${slug}`;
+  const imageUrl = post.image
+    ? `${SITE_URL}${post.image}`
+    : `${SITE_URL}/api/og?title=${encodeURIComponent(post.title)}`;
+
+  return {
+    // Básicos
+    title: `${post.title} | ${SITE_NAME}`,
+    description: post.description,
+    authors: [{ name: post.author.name }],
+    keywords: [post.category, ...post.tags],
+
+    // Robots
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+
+    // Open Graph (Facebook, LinkedIn, etc.)
+    openGraph: {
+      type: 'article',
+      title: post.title,
+      description: post.description,
+      url,
+      siteName: SITE_NAME,
+      publishedTime: post.date,
+      modifiedTime: post.date,
+      authors: [post.author.name],
+      tags: post.tags,
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: post.imageAlt || post.title,
+        },
+      ],
+      locale: 'es_ES',
+    },
+
+    // Twitter Cards
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.description,
+      images: [imageUrl],
+      creator: post.author.twitter || '@tusitio',
+      site: '@tusitio',
+    },
+
+    // Alternates
+    alternates: {
+      canonical: url,
+      languages: {
+        'es-ES': url,
+      },
+    },
+
+    // Otros
+    category: post.category,
+  };
+}
+```
+
+## Imágenes Open Graph dinámicas
+
+Genera imágenes OG automáticamente para cada post:
+
+```typescript title="app/api/og/route.tsx"
+import { ImageResponse } from 'next/og';
+import { NextRequest } from 'next/server';
+
+export const runtime = 'edge';
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const title = searchParams.get('title') || 'EmpiezaTuSaaS Blog';
+  const category = searchParams.get('category') || '';
+  const author = searchParams.get('author') || '';
+  const date = searchParams.get('date') || '';
+
+  // Cargar fuente (opcional)
+  const fontData = await fetch(
+    new URL('../../../public/fonts/Inter-Bold.ttf', import.meta.url)
+  ).then((res) => res.arrayBuffer());
+
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          height: '100%',
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          justifyContent: 'flex-end',
+          padding: 80,
+          backgroundColor: '#0a0a0a',
+          backgroundImage:
+            'radial-gradient(circle at 25px 25px, #333 2%, transparent 0%), radial-gradient(circle at 75px 75px, #333 2%, transparent 0%)',
+          backgroundSize: '100px 100px',
+        }}
+      >
+        {/* Logo */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 60,
+            left: 80,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+          }}
+        >
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, #f97316, #eab308)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 24,
+            }}
+          >
+            ⚔️
+          </div>
+          <span style={{ color: '#fff', fontSize: 24, fontWeight: 600 }}>
+            EmpiezaTuSaaS
+          </span>
+        </div>
+
+        {/* Categoría */}
+        {category && (
+          <div
+            style={{
+              display: 'flex',
+              padding: '8px 16px',
+              backgroundColor: '#f97316',
+              borderRadius: 9999,
+              color: '#fff',
+              fontSize: 18,
+              marginBottom: 24,
+            }}
+          >
+            {category}
+          </div>
+        )}
+
+        {/* Título */}
+        <div
+          style={{
+            fontSize: title.length > 60 ? 48 : 64,
+            fontWeight: 700,
+            color: '#fff',
+            lineHeight: 1.2,
+            marginBottom: 32,
+            maxWidth: '90%',
+          }}
+        >
+          {title}
+        </div>
+
+        {/* Footer */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 24,
+            color: '#888',
+            fontSize: 20,
+          }}
+        >
+          {author && <span>{author}</span>}
+          {date && (
+            <>
+              <span>•</span>
+              <span>{date}</span>
+            </>
+          )}
+        </div>
+      </div>
+    ),
+    {
+      width: 1200,
+      height: 630,
+      fonts: [
+        {
+          name: 'Inter',
+          data: fontData,
+          style: 'normal',
+          weight: 700,
+        },
+      ],
+    }
+  );
+}
+```
+
+### Usar la imagen OG
+
+```typescript
+// En generateMetadata
+const imageUrl = post.image
+  ? `${SITE_URL}${post.image}`
+  : `${SITE_URL}/api/og?title=${encodeURIComponent(post.title)}&category=${post.category}&author=${post.author.name}&date=${post.date}`;
+```
+
+## Structured Data (JSON-LD)
+
+### Article Schema
+
+```typescript title="components/blog/article-schema.tsx"
+import { BlogPost } from '@/types/blog';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tusitio.com';
+
+interface ArticleSchemaProps {
+  post: BlogPost;
+}
+
+export function ArticleSchema({ post }: ArticleSchemaProps) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    description: post.description,
+    image: post.image ? `${SITE_URL}${post.image}` : undefined,
+    datePublished: post.date,
+    dateModified: post.date,
+    author: {
+      '@type': 'Person',
+      name: post.author.name,
+      url: post.author.twitter
+        ? `https://twitter.com/${post.author.twitter.replace('@', '')}`
+        : undefined,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'EmpiezaTuSaaS',
+      logo: {
+        '@type': 'ImageObject',
+        url: `${SITE_URL}/logo.png`,
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `${SITE_URL}/blog/${post.slug}`,
+    },
+    keywords: [post.category, ...post.tags].join(', '),
+    articleSection: post.category,
+    wordCount: post.content.split(/\s+/).length,
+    timeRequired: post.readingTime,
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}
+```
+
+### BreadcrumbList Schema
+
+```typescript title="components/blog/breadcrumb-schema.tsx"
+interface BreadcrumbSchemaProps {
+  items: { name: string; url: string }[];
+}
+
+export function BreadcrumbSchema({ items }: BreadcrumbSchemaProps) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}
+
+// Uso
+<BreadcrumbSchema
+  items={[
+    { name: 'Inicio', url: 'https://tusitio.com' },
+    { name: 'Blog', url: 'https://tusitio.com/blog' },
+    { name: post.category, url: `https://tusitio.com/blog/category/${post.category}` },
+    { name: post.title, url: `https://tusitio.com/blog/${post.slug}` },
+  ]}
+/>
+```
+
+### FAQ Schema (para posts con preguntas)
+
+```typescript title="components/blog/faq-schema.tsx"
+interface FAQSchemaProps {
+  questions: { question: string; answer: string }[];
+}
+
+export function FAQSchema({ questions }: FAQSchemaProps) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: questions.map((q) => ({
+      '@type': 'Question',
+      name: q.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: q.answer,
+      },
+    })),
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}
+```
+
+### HowTo Schema (para tutoriales)
+
+```typescript title="components/blog/howto-schema.tsx"
+interface HowToSchemaProps {
+  name: string;
+  description: string;
+  steps: { name: string; text: string; image?: string }[];
+  totalTime?: string; // ISO 8601 duration, ej: "PT30M"
+}
+
+export function HowToSchema({ name, description, steps, totalTime }: HowToSchemaProps) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name,
+    description,
+    totalTime,
+    step: steps.map((step, index) => ({
+      '@type': 'HowToStep',
+      position: index + 1,
+      name: step.name,
+      text: step.text,
+      image: step.image,
+    })),
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}
+```
+
+## URLs amigables
+
+### Generar slugs SEO-friendly
+
+```typescript title="lib/utils/slug.ts"
+export function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remover acentos
+    .replace(/[^a-z0-9]+/g, '-') // Reemplazar caracteres especiales
+    .replace(/(^-|-$)/g, '') // Remover guiones al inicio/final
+    .substring(0, 60); // Limitar longitud
+}
+
+// Ejemplos:
+// "Cómo integrar Stripe en Next.js" -> "como-integrar-stripe-en-nextjs"
+// "¡10 Tips para tu SaaS!" -> "10-tips-para-tu-saas"
+```
+
+### Mejores prácticas para URLs
+
+```markdown
+✅ Buenas URLs:
+/blog/integrar-stripe-nextjs
+/blog/autenticacion-google-oauth
+/blog/mejorar-seo-saas
+
+❌ Malas URLs:
+/blog/post-123
+/blog/como-integrar-stripe-en-tu-aplicacion-nextjs-paso-a-paso-tutorial-completo
+/blog/Integrar_Stripe
+```
+
+## Links internos
+
+### Componente de posts relacionados con SEO
+
+```typescript title="components/blog/related-posts.tsx"
+import Link from 'next/link';
+import { BlogPost } from '@/types/blog';
+
+interface RelatedPostsProps {
+  posts: BlogPost[];
+  currentSlug: string;
+}
+
+export function RelatedPosts({ posts, currentSlug }: RelatedPostsProps) {
+  const related = posts.filter((p) => p.slug !== currentSlug).slice(0, 3);
+
+  if (related.length === 0) return null;
+
+  return (
+    <nav aria-label="Artículos relacionados">
+      <h2 className="text-2xl font-bold mb-6">Artículos relacionados</h2>
+      <div className="grid md:grid-cols-3 gap-6">
+        {related.map((post) => (
+          <Link
+            key={post.slug}
+            href={`/blog/${post.slug}`}
+            className="block p-4 rounded-lg border hover:border-primary transition-colors"
+          >
+            <h3 className="font-semibold mb-2">{post.title}</h3>
+            <p className="text-sm text-muted-foreground line-clamp-2">
+              {post.description}
+            </p>
+          </Link>
+        ))}
+      </div>
+    </nav>
+  );
+}
+```
+
+### Auto-linking en contenido
+
+```typescript title="lib/auto-link.ts"
+import { getAllPosts } from './blog';
+
+interface LinkSuggestion {
+  text: string;
+  url: string;
+}
+
+export function getInternalLinkSuggestions(content: string): LinkSuggestion[] {
+  const posts = getAllPosts();
+  const suggestions: LinkSuggestion[] = [];
+
+  posts.forEach((post) => {
+    // Buscar menciones del título o keywords
+    const keywords = [post.title, ...post.tags];
+    keywords.forEach((keyword) => {
+      if (content.toLowerCase().includes(keyword.toLowerCase())) {
+        suggestions.push({
+          text: keyword,
+          url: `/blog/${post.slug}`,
+        });
+      }
+    });
+  });
+
+  return suggestions;
+}
+```
+
+## Sitemap del blog
+
+```typescript title="app/blog/sitemap.ts"
+import { MetadataRoute } from 'next';
+import { getAllPosts, getAllCategories } from '@/lib/blog';
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tusitio.com';
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  const posts = getAllPosts();
+  const categories = getAllCategories();
+
+  const postUrls = posts.map((post) => ({
+    url: `${SITE_URL}/blog/${post.slug}`,
+    lastModified: new Date(post.date),
+    changeFrequency: 'monthly' as const,
+    priority: 0.7,
+  }));
+
+  const categoryUrls = categories.map((category) => ({
+    url: `${SITE_URL}/blog/category/${category.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly' as const,
+    priority: 0.5,
+  }));
+
+  return [
+    {
+      url: `${SITE_URL}/blog`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.9,
+    },
+    ...postUrls,
+    ...categoryUrls,
+  ];
+}
+```
+
+## Optimización de imágenes
+
+### Componente de imagen optimizada
+
+```typescript title="components/blog/optimized-image.tsx"
+import Image from 'next/image';
+
+interface OptimizedImageProps {
+  src: string;
+  alt: string;
+  caption?: string;
+  priority?: boolean;
+}
+
+export function OptimizedImage({
+  src,
+  alt,
+  caption,
+  priority = false,
+}: OptimizedImageProps) {
+  return (
+    <figure className="my-8">
+      <div className="relative aspect-[16/9] rounded-xl overflow-hidden">
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 800px"
+          priority={priority}
+          quality={85}
+        />
+      </div>
+      {caption && (
+        <figcaption className="text-center text-sm text-muted-foreground mt-3">
+          {caption}
+        </figcaption>
+      )}
+    </figure>
+  );
+}
+```
+
+### Checklist de imágenes
+
+<Steps>
+  <Step>
+    ### Formato correcto
+    - Usa WebP para mejor compresión
+    - Fallback a JPEG para compatibilidad
+    - PNG solo para transparencias
+  </Step>
+
+  <Step>
+    ### Tamaños adecuados
+    - Imagen destacada: 1200x630px (OG)
+    - Contenido: max 800px de ancho
+    - Thumbnails: 400x225px
+  </Step>
+
+  <Step>
+    ### Alt text descriptivo
+    ```markdown
+    ❌ alt="imagen"
+    ❌ alt="screenshot"
+    ✅ alt="Dashboard de Stripe mostrando gráfico de ingresos mensuales"
+    ✅ alt="Código de configuración de webhook en TypeScript"
+    ```
+  </Step>
+
+  <Step>
+    ### Lazy loading
+    Next.js Image lo hace automático, pero verifica:
+    - `priority={true}` solo para above-the-fold
+    - Resto con lazy loading por defecto
+  </Step>
+</Steps>
+
+## Core Web Vitals
+
+### Medir performance
+
+```typescript title="components/analytics/web-vitals.tsx"
+'use client';
+
+import { useReportWebVitals } from 'next/web-vitals';
+
+export function WebVitals() {
+  useReportWebVitals((metric) => {
+    // Enviar a tu servicio de analytics
+    console.log(metric);
+
+    // Ejemplo: enviar a Google Analytics
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', metric.name, {
+        value: Math.round(
+          metric.name === 'CLS' ? metric.value * 1000 : metric.value
+        ),
+        event_label: metric.id,
+        non_interaction: true,
+      });
+    }
+  });
+
+  return null;
+}
+```
+
+### Objetivos de performance
+
+| Métrica | Bueno | Necesita mejora | Pobre |
+|---------|-------|-----------------|-------|
+| **LCP** | < 2.5s | 2.5s - 4s | > 4s |
+| **FID** | < 100ms | 100ms - 300ms | > 300ms |
+| **CLS** | < 0.1 | 0.1 - 0.25 | > 0.25 |
+| **INP** | < 200ms | 200ms - 500ms | > 500ms |
+
+## Herramientas de verificación
+
+<Steps>
+  <Step>
+    ### Google Search Console
+    - Verifica indexación
+    - Revisa errores de cobertura
+    - Analiza keywords que generan tráfico
+  </Step>
+
+  <Step>
+    ### Google Rich Results Test
+    [search.google.com/test/rich-results](https://search.google.com/test/rich-results)
+    - Verifica structured data
+    - Preview de rich snippets
+  </Step>
+
+  <Step>
+    ### PageSpeed Insights
+    [pagespeed.web.dev](https://pagespeed.web.dev)
+    - Core Web Vitals
+    - Sugerencias de mejora
+  </Step>
+
+  <Step>
+    ### Social Share Preview
+    - [Twitter Card Validator](https://cards-dev.twitter.com/validator)
+    - [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/)
+    - [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/)
+  </Step>
+</Steps>
+
+<Callout type="info">
+  Ejecuta estas verificaciones cada vez que publiques un post importante
+  o hagas cambios significativos en la estructura del blog.
+</Callout>
+
+## Resumen
+
+Para maximizar el SEO de tu blog:
+
+1. **Metadata completo** en cada post (title, description, OG, Twitter)
+2. **Structured data** con Article, Breadcrumb y schemas relevantes
+3. **URLs cortas** y descriptivas con keywords
+4. **Imágenes optimizadas** con alt text descriptivo
+5. **Links internos** entre posts relacionados
+6. **Core Web Vitals** optimizados
+7. **Sitemap y RSS** actualizados
+
+Con esta configuración, tu blog estará optimizado para rankear en Google y verse bien cuando se comparta en redes sociales.
