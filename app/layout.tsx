@@ -16,7 +16,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "EmpiezaTuSaaS - Tu aventura hacia el Indie Hacking",
   description:
-    "El boilerplate NextJS que te ahorra 3 meses de desarrollo. Lanza tu SaaS, herramienta AI, o web app y conquista tu primer MRR.",
+    "El boilerplate NextJS que te ahorra 3 meses de desarrollo. Lanza tu SaaS, herramienta AI, o web app y conquista tu primer € online.",
   keywords: [
     "NextJS boilerplate",
     "SaaS starter kit",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "EmpiezaTuSaaS - Tu aventura hacia el Indie Hacking",
     description:
-      "El boilerplate NextJS que te ahorra 3 meses de desarrollo. Lanza tu SaaS y conquista tu primer MRR.",
+      "El boilerplate NextJS que te ahorra 3 meses de desarrollo. Lanza tu SaaS y conquista tu primer € online.",
     type: "website",
     locale: "es_ES",
   },
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "EmpiezaTuSaaS - Tu aventura hacia el Indie Hacking",
     description:
-      "El boilerplate NextJS que te ahorra 3 meses de desarrollo. Lanza tu SaaS y conquista tu primer MRR.",
+      "El boilerplate NextJS que te ahorra 3 meses de desarrollo. Lanza tu SaaS y conquista tu primer € online.",
   },
 };
 

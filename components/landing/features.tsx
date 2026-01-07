@@ -10,8 +10,10 @@ import {
   Palette,
   Search,
   Users,
+  User,
   BarChart3,
   Sparkles,
+  Layout,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
@@ -286,24 +288,24 @@ export function Features() {
         >
           {[
             {
-              icon: Users,
-              title: "Multi-tenancy",
-              description: "Soporte para múltiples organizaciones",
+              icon: Layout,
+              title: "Landing Pages",
+              description: "Páginas personalizables listas para vender",
             },
             {
               icon: BarChart3,
-              title: "Analytics",
-              description: "Integración con Plausible/PostHog",
+              title: "Dashboard",
+              description: "Dashboards para visualizar tus datos",
             },
             {
-              icon: Shield,
-              title: "Rate Limiting",
-              description: "Protección contra abusos",
+              icon: User,
+              title: "Sign-up & Login",
+              description: "User authentication finally made easy",
             },
             {
               icon: Database,
-              title: "File Uploads",
-              description: "Subida de archivos con S3",
+              title: "Blog",
+              description: "Posiciona en Google con contenido y SEO",
             },
           ].map((item, index) => (
             <motion.div

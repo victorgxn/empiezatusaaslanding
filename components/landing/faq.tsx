@@ -7,6 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import Image from "next/image";
 
 const faqs = [
   {
@@ -72,6 +73,21 @@ export function FAQ() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
+          <motion.div
+            initial={{ scale: 0, rotate: -10 }}
+            whileInView={{ scale: 1, rotate: 0 }}
+            transition={{ delay: 0.1, type: "spring", bounce: 0.5 }}
+            viewport={{ once: true }}
+            className="flex justify-center mb-6"
+          >
+            <Image
+              src="/landing/faq.png"
+              alt="FAQ Sage"
+              width={120}
+              height={120}
+              className="drop-shadow-lg"
+            />
+          </motion.div>
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
             Preguntas{" "}
             <span className="text-gradient">frecuentes</span>

@@ -58,7 +58,7 @@ const tiers = [
     name: "Dragon Slayer",
     icon: "/pricing/dragon-slayer.webp",
     price: 299,
-    description: "El camino completo del héroe. Desde cero hasta tu primer MRR.",
+    description: "El camino completo del héroe. Desde cero hasta tu primer € online.",
     tagline: "El héroe que domina todo",
     color: "gold",
     glowClass: "tier-dragon",
@@ -81,7 +81,7 @@ const tiers = [
       items: [
         { icon: BookOpen, text: "Build a SaaS from 0" },
         { icon: Swords, text: "Entrepreneur mindset" },
-        { icon: Crown, text: "De idea a MRR" },
+        { icon: Crown, text: "De idea a tu primer €" },
       ],
     },
     cta: "Obtener Pack Completo",
