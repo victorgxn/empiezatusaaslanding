@@ -176,7 +176,7 @@ export function Features() {
       <div className="absolute top-1/3 left-[25%] w-[200px] h-[200px] bg-primary/25 rounded-full blur-[80px] animate-pulse" />
       <div className="absolute top-1/3 right-[25%] w-[200px] h-[200px] bg-gold/20 rounded-full blur-[80px] animate-pulse" style={{ animationDelay: '1s' }} />
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -198,11 +198,11 @@ export function Features() {
               <span className="font-bold text-accent">Equipamiento del héroe</span>
             </Badge>
           </motion.div>
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 drop-shadow-lg">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black mb-4 sm:mb-6 drop-shadow-lg">
             Todo lo que necesitas,{" "}
             <span className="text-gradient">nada que no</span>
           </h2>
-          <p className="text-muted-foreground text-xl max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-base sm:text-lg md:text-xl max-w-2xl mx-auto">
             Funcionalidades esenciales para lanzar tu SaaS, sin bloatware ni
             configuraciones innecesarias.
           </p>
@@ -317,17 +317,17 @@ export function Features() {
               whileHover={{ scale: 1.05, rotate: -1 }}
               transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
               viewport={{ once: true }}
-              className="glass-card p-2 sm:p-4 lg:p-6 text-center bg-background/70 backdrop-blur-md hover:bg-background/80"
+              className="glass-card p-4 sm:p-5 lg:p-6 text-center bg-background/70 backdrop-blur-md hover:bg-background/80"
             >
               <motion.div
-                className="w-8 h-8 sm:w-12 sm:h-12 lg:w-14 lg:h-14 mx-auto mb-2 sm:mb-4 rounded-xl sm:rounded-2xl bg-primary/20 border sm:border-2 border-primary/40 flex items-center justify-center"
+                className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 mx-auto mb-3 sm:mb-4 rounded-xl sm:rounded-2xl bg-primary/20 border-2 border-primary/40 flex items-center justify-center"
                 whileHover={{ rotate: [0, -10, 10, 0] }}
                 transition={{ duration: 0.4 }}
               >
-                <item.icon className="w-4 h-4 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-primary" />
+                <item.icon className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-primary" />
               </motion.div>
-              <h4 className="font-black text-xs sm:text-base lg:text-lg mb-1 sm:mb-2 truncate">{item.title}</h4>
-              <p className="text-[10px] sm:text-sm lg:text-base text-muted-foreground hidden sm:block">{item.description}</p>
+              <h4 className="font-black text-sm sm:text-base lg:text-lg mb-1 sm:mb-2">{item.title}</h4>
+              <p className="text-xs sm:text-sm lg:text-base text-muted-foreground">{item.description}</p>
             </motion.div>
           ))}
         </motion.div>

@@ -88,11 +88,11 @@ export function FAQ() {
               className="drop-shadow-lg"
             />
           </motion.div>
-          <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
             Preguntas{" "}
             <span className="text-gradient">frecuentes</span>
           </h2>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-muted-foreground text-base sm:text-lg">
             Todo lo que necesitas saber antes de empezar
           </p>
         </motion.div>

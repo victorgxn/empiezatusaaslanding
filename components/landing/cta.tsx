@@ -47,11 +47,11 @@ export function CTA() {
             <span className="text-base text-gold font-bold">Tu aventura te espera</span>
           </motion.div>
 
-          <h2 className="text-4xl sm:text-5xl md:text-6xl font-black mb-8 drop-shadow-2xl">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-black mb-6 sm:mb-8 drop-shadow-2xl">
             ¿Listo para comenzar tu{" "}
             <span className="text-gradient">expedición</span>?
           </h2>
-          <p className="text-xl sm:text-2xl text-foreground/90 mb-10 max-w-2xl mx-auto drop-shadow-lg">
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-foreground/90 mb-8 sm:mb-10 max-w-2xl mx-auto drop-shadow-lg">
             Únete a <span className="text-foreground font-black">+20 builders</span> que ya están
             construyendo sus SaaS. Empieza hoy y lanza tu primer producto.
           </p>

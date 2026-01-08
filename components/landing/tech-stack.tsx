@@ -87,7 +87,7 @@ export function TechStack() {
               whileHover={{ scale: 1.05, y: -5 }}
               className="glass rounded-lg sm:rounded-xl p-2 sm:p-4 lg:p-6 text-center group cursor-default"
             >
-              <div className="w-8 h-8 sm:w-12 sm:h-12 lg:w-14 lg:h-14 mx-auto mb-2 sm:mb-4 rounded-md overflow-hidden group-hover:scale-110 transition-transform">
+              <div className="w-6 h-6 sm:w-10 sm:h-10 lg:w-12 lg:h-12 mx-auto mb-2 sm:mb-3 rounded-md overflow-hidden group-hover:scale-110 transition-transform">
                 <Image
                   src={tech.icon}
                   alt={tech.name}

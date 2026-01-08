@@ -29,7 +29,7 @@ const sparklePositions: SparklePosition[] = [
 
 export function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
+    <section className="relative min-h-screen flex items-center justify-center pt-16 sm:pt-20 overflow-hidden">
       {/* Background Image - Puerta cerrada */}
       <div className="absolute inset-0 z-0">
         <Image
@@ -64,7 +64,7 @@ export function Hero() {
         ))}
       </div>
 
-      <div className="relative z-20 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-16 sm:py-20">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -79,18 +79,18 @@ export function Hero() {
           >
             <Badge
               variant="outline"
-              className="mb-8 px-5 py-3 text-sm border-3 border-gold/50 bg-background/80 backdrop-blur-sm hover:bg-gold/20 transition-colors rounded-full cartoon-shadow-sm"
+              className="mb-6 sm:mb-8 px-3 sm:px-4 md:px-5 py-2 sm:py-2.5 md:py-3 text-xs sm:text-sm border-2 sm:border-3 border-gold/50 bg-background/80 backdrop-blur-sm hover:bg-gold/20 transition-colors rounded-full cartoon-shadow-sm"
             >
-              <Rocket className="w-5 h-5 mr-2 text-gold float" />
+              <Rocket className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 text-gold float" />
               <span className="text-gold font-bold">Nueva Expedición</span>
-              <span className="mx-3 text-muted-foreground">•</span>
-              <span className="text-foreground/90">Tu aventura SaaS comienza aquí</span>
+              <span className="mx-1.5 sm:mx-2 md:mx-3 text-muted-foreground hidden sm:inline">•</span>
+              <span className="text-foreground/90 hidden sm:inline">Tu aventura SaaS comienza aquí</span>
             </Badge>
           </motion.div>
 
           {/* Headline */}
           <motion.h1
-            className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight mb-8 leading-[0.9] drop-shadow-2xl"
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-black tracking-tight mb-6 sm:mb-8 leading-[0.95] drop-shadow-2xl"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.5 }}
@@ -101,30 +101,30 @@ export function Hero() {
               Indie Hacking
             </span>
             <br />
-            <span className="inline-flex items-center gap-4">
+            <span className="inline-flex items-center gap-2 sm:gap-3 lg:gap-4">
               empieza aquí
               <motion.span
                 animate={{ rotate: [0, 10, -10, 0] }}
                 transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 3 }}
               >
-                <Sparkles className="w-12 h-12 text-gold inline drop-shadow-lg" />
+                <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 text-gold inline drop-shadow-lg" />
               </motion.span>
             </span>
           </motion.h1>
 
           {/* Subheadline */}
           <motion.p
-            className="text-lg sm:text-xl text-foreground/90 max-w-3xl mx-auto mb-12 leading-relaxed drop-shadow-lg"
+            className="text-sm sm:text-base md:text-lg lg:text-xl text-foreground/90 max-w-3xl mx-auto mb-8 sm:mb-10 md:mb-12 leading-relaxed drop-shadow-lg px-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.5 }}
           >
             El boilerplate NextJS que te ahorra hasta{" "}
-            <span className="bg-destructive/20 text-destructive font-black px-2 py-0.5 rounded-md border border-destructive/50">
+            <span className="bg-destructive/20 text-destructive font-black px-2 py-0.5 rounded-md border border-destructive/50 whitespace-nowrap">
               3 meses
             </span>{" "}
             de desarrollo y te da las herramientas para conseguir tu{" "}
-            <span className="bg-gold/20 text-gold font-black px-2 py-0.5 rounded-md border border-gold/50">
+            <span className="bg-gold/20 text-gold font-black px-2 py-0.5 rounded-md border border-gold/50 whitespace-nowrap">
               primer € online
             </span>
           </motion.p>
@@ -156,17 +156,17 @@ export function Hero() {
 
           {/* Social Proof */}
           <motion.div
-            className="flex flex-col sm:flex-row items-center justify-center gap-10 text-base"
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 lg:gap-6 text-base"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6, duration: 0.5 }}
           >
-            <div className="flex items-center gap-4 bg-background/60 backdrop-blur-sm px-5 py-3 rounded-2xl border-2 border-border/50">
-              <div className="flex -space-x-4">
+            <div className="flex items-center gap-2 sm:gap-3 bg-background/60 backdrop-blur-sm px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl border-2 border-border/50">
+              <div className="flex -space-x-2 sm:-space-x-3">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <motion.div
                     key={i}
-                    className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-gold border-3 border-background flex items-center justify-center text-sm font-black shadow-lg"
+                    className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 lg:w-10 lg:h-10 rounded-full bg-gradient-to-br from-primary to-gold border-2 border-background flex items-center justify-center text-[10px] sm:text-xs font-black shadow-lg"
                     whileHover={{ scale: 1.2, zIndex: 10 }}
                     transition={{ type: "spring", bounce: 0.5 }}
                   >
@@ -174,20 +174,20 @@ export function Hero() {
                   </motion.div>
                 ))}
               </div>
-              <span className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-primary" />
-                <span className="font-black text-foreground text-xl">+20</span>
-                <span className="text-muted-foreground">builders</span>
+              <span className="flex items-center gap-1 sm:gap-1.5">
+                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                <span className="font-black text-foreground text-sm sm:text-base lg:text-lg">+20</span>
+                <span className="text-muted-foreground text-xs sm:text-sm">builders</span>
               </span>
             </div>
-            <div className="flex items-center gap-2 bg-background/60 backdrop-blur-sm px-5 py-3 rounded-2xl border-2 border-border/50">
+            <div className="flex items-center gap-1 sm:gap-1.5 bg-background/60 backdrop-blur-sm px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl border-2 border-border/50">
               {[1, 2, 3, 4, 5].map((i) => (
                 <Star
                   key={i}
-                  className="w-5 h-5 fill-gold text-gold"
+                  className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-gold text-gold"
                 />
               ))}
-              <span className="ml-2 font-black text-foreground text-xl">4.9/5</span>
+              <span className="ml-1 sm:ml-1.5 font-black text-foreground text-sm sm:text-base lg:text-lg">4.9/5</span>
             </div>
           </motion.div>
         </motion.div>
@@ -199,18 +199,18 @@ export function Hero() {
           transition={{ duration: 0.6, delay: 0.7, type: "spring", bounce: 0.3 }}
           className="mt-20 relative"
         >
-          <div className="glass-card p-8 cartoon-shadow max-w-3xl mx-auto bg-background/80 backdrop-blur-md">
+          <div className="glass-card p-4 sm:p-6 md:p-8 cartoon-shadow max-w-3xl mx-auto bg-background/80 backdrop-blur-md">
             {/* Terminal header */}
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-4 h-4 rounded-full bg-destructive" />
-              <div className="w-4 h-4 rounded-full bg-gold" />
-              <div className="w-4 h-4 rounded-full bg-emerald" />
-              <span className="ml-4 text-sm text-muted-foreground font-mono flex items-center gap-2 bg-muted/50 px-3 py-1 rounded-full">
-                <Sparkles className="w-4 h-4 text-gold" />
+            <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+              <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-destructive" />
+              <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-gold" />
+              <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-emerald" />
+              <span className="ml-2 sm:ml-4 text-xs sm:text-sm text-muted-foreground font-mono flex items-center gap-1.5 sm:gap-2 bg-muted/50 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
+                <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-gold" />
                 quest-log.sh
               </span>
             </div>
-            <pre className="font-mono text-base sm:text-lg overflow-x-auto leading-relaxed">
+            <pre className="font-mono text-sm sm:text-base md:text-lg lg:text-xl overflow-x-auto leading-relaxed">
               <code>
                 <span className="text-muted-foreground">$</span>{" "}
                 <span className="text-emerald font-bold">git</span>{" "}
