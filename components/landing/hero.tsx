@@ -114,7 +114,7 @@ export function Hero() {
 
           {/* Subheadline */}
           <motion.p
-            className="text-sm sm:text-base md:text-lg lg:text-xl text-foreground/90 max-w-3xl mx-auto mb-8 sm:mb-10 md:mb-12 leading-relaxed drop-shadow-lg px-2"
+            className="text-base sm:text-lg md:text-xl lg:text-2xl text-foreground/90 max-w-3xl mx-auto mb-8 sm:mb-10 md:mb-12 leading-relaxed drop-shadow-lg px-2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.5 }}

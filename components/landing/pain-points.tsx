@@ -100,8 +100,8 @@ export function PainPoints() {
                   <Clock className="w-6 h-6 sm:w-7 sm:h-7 text-destructive" />
                 </motion.div>
                 <div className="min-w-0">
-                  <h3 className="text-lg sm:text-xl font-black text-destructive">Sin EmpiezaTuSaaS</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">El camino largo y doloroso</p>
+                  <h3 className="text-xl sm:text-2xl font-black text-destructive">Sin EmpiezaTuSaaS</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground">El camino largo y doloroso</p>
                 </div>
               </div>
 
@@ -119,16 +119,16 @@ export function PainPoints() {
                       className="flex items-center justify-between py-2.5 sm:py-3 lg:py-4 px-3 sm:px-4 rounded-xl bg-background/50 border-2 border-destructive/20 hover:border-destructive/40 transition-all group"
                     >
                       <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-destructive/15 flex items-center justify-center group-hover:bg-destructive/25 transition-colors flex-shrink-0">
+                        <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-destructive/15 flex items-center justify-center group-hover:bg-destructive/25 transition-colors flex-shrink-0">
                           <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-destructive/80" />
                         </div>
-                        <span className="text-xs sm:text-sm text-foreground/80 font-medium">{item.task}</span>
+                        <span className="text-sm sm:text-base lg:text-lg text-foreground/90 font-semibold">{item.task}</span>
                       </div>
                       <motion.div
-                        className="flex items-center bg-destructive/20 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full flex-shrink-0"
+                        className="flex items-center bg-destructive/20 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full flex-shrink-0"
                         whileHover={{ scale: 1.1 }}
                       >
-                        <span className="font-mono text-sm sm:text-lg text-destructive font-black">
+                        <span className="font-mono text-base sm:text-xl lg:text-2xl text-destructive font-black">
                           {item.hours}h
                         </span>
                       </motion.div>
@@ -181,8 +181,8 @@ export function PainPoints() {
                   <Rocket className="w-6 h-6 sm:w-7 sm:h-7 text-emerald" />
                 </motion.div>
                 <div className="min-w-0">
-                  <h3 className="text-lg sm:text-xl font-black text-emerald">Con EmpiezaTuSaaS</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground">El atajo del héroe</p>
+                  <h3 className="text-xl sm:text-2xl font-black text-emerald">Con EmpiezaTuSaaS</h3>
+                  <p className="text-sm sm:text-base text-muted-foreground">El atajo del héroe</p>
                 </div>
               </div>
 
@@ -197,7 +197,7 @@ export function PainPoints() {
                   <div className="w-2 h-2 rounded-full bg-emerald" />
                   <span className="ml-2 text-[10px] text-muted-foreground font-mono">magic.ts</span>
                 </div>
-                <pre className="font-mono text-xs sm:text-sm">
+                <pre className="font-mono text-sm sm:text-base lg:text-lg">
                   <code>
                     <span className="text-muted-foreground">const</span>{" "}
                     <span className="text-emerald font-bold">launch_time</span>{" "}
@@ -223,12 +223,12 @@ export function PainPoints() {
                       className="flex items-center gap-2.5 sm:gap-3 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl bg-background/50 border-2 border-emerald/20 hover:border-emerald/40 transition-all group"
                     >
                       <motion.div
-                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald/20 flex items-center justify-center group-hover:bg-emerald/30 transition-colors flex-shrink-0"
+                        className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-emerald/20 flex items-center justify-center group-hover:bg-emerald/30 transition-colors flex-shrink-0"
                         whileHover={{ rotate: [0, -10, 10, 0] }}
                       >
                         <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-emerald" />
                       </motion.div>
-                      <span className="text-xs sm:text-sm text-foreground font-medium flex-1">{item.text}</span>
+                      <span className="text-sm sm:text-base lg:text-lg text-foreground font-semibold flex-1">{item.text}</span>
                       <CheckCircle2 className="w-5 h-5 sm:w-6 sm:h-6 text-emerald flex-shrink-0" />
                     </motion.div>
                   );
@@ -270,10 +270,10 @@ export function PainPoints() {
           <div className="inline-flex items-center gap-3 sm:gap-4 bg-background/60 backdrop-blur-sm px-4 sm:px-8 py-3 sm:py-5 rounded-xl sm:rounded-2xl border-2 sm:border-3 border-primary/30 cartoon-shadow">
             <Trophy className="w-6 h-6 sm:w-8 sm:h-8 text-gold flex-shrink-0" />
             <div className="text-left">
-              <p className="text-base sm:text-xl lg:text-2xl font-black">
+              <p className="text-xl sm:text-2xl lg:text-3xl font-black">
                 Ahorra <span className="text-gradient">{totalHours - 5}+ horas</span>
               </p>
-              <p className="text-xs sm:text-sm text-muted-foreground">Tiempo que puedes invertir en lo que realmente importa</p>
+              <p className="text-sm sm:text-base lg:text-lg text-muted-foreground">Tiempo que puedes invertir en lo que realmente importa</p>
             </div>
             <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-primary float flex-shrink-0" />
           </div>

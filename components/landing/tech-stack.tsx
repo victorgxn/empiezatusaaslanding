@@ -11,45 +11,45 @@ import {
 
 const technologies = [
   {
-    name: "Next.js 15",
-    description: "React framework",
-    icon: "/tecnologias/nextjs.webp",
+    name: "Next.js 16",
+    icon: "/tecnologias-ia/nextjs.png",
   },
   {
     name: "TypeScript",
-    description: "Type safety",
-    icon: "/tecnologias/typescript.webp",
+    icon: "/tecnologias-ia/typescript.png",
   },
   {
     name: "Tailwind CSS",
-    description: "Styling",
-    icon: "/tecnologias/tailwind.webp",
+    icon: "/tecnologias-ia/tailwind.png",
   },
   {
     name: "Shadcn/ui",
-    description: "UI Components",
-    icon: "/tecnologias/shadcn.webp",
+    icon: "/tecnologias-ia/shadcn.png",
   },
   {
     name: "Prisma",
-    description: "Database ORM",
-    icon: "/tecnologias/prisma.webp",
+    icon: "/tecnologias-ia/prisma.png",
   },
   {
     name: "Stripe",
-    description: "Payments",
     icon: "/tecnologias/stripe.webp",
   },
   {
     name: "Better Auth",
-    description: "Authentication",
     icon: "/tecnologias/better-auth.webp",
   },
   {
     name: "Resend",
-    description: "Emails",
     icon: "/tecnologias/resend.webp",
   },
+];
+
+const aiTools = [
+  { name: "Cursor", icon: "/ia/cursor.webp" },
+  { name: "Claude", icon: "/ia/claude.webp" },
+  { name: "ChatGPT", icon: "/ia/chatgpt.webp" },
+  { name: "Copilot", icon: "/ia/copilot.webp" },
+  { name: "Windsurf", icon: "/ia/windsurf.webp" },
 ];
 
 export function TechStack() {
@@ -58,73 +58,84 @@ export function TechStack() {
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent" />
 
-      <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-12"
         >
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            Stack tecnológico{" "}
-            <span className="text-gradient">moderno</span>
+            Tu arsenal de <span className="text-gradient">herramientas</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Las mejores herramientas del ecosistema, integradas y listas para
-            producción.
+            Las mejores tecnologías del ecosistema, integradas y listas para producción.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-4 gap-2 sm:gap-4 lg:gap-6">
-          {technologies.map((tech, index) => (
-            <motion.div
-              key={tech.name}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-              viewport={{ once: true }}
-              whileHover={{ scale: 1.05, y: -5 }}
-              className="glass rounded-lg sm:rounded-xl p-2 sm:p-4 lg:p-6 text-center group cursor-default"
-            >
-              <div className="w-6 h-6 sm:w-10 sm:h-10 lg:w-12 lg:h-12 mx-auto mb-2 sm:mb-3 rounded-md overflow-hidden group-hover:scale-110 transition-transform">
-                <Image
-                  src={tech.icon}
-                  alt={tech.name}
-                  width={56}
-                  height={56}
-                  className="w-full h-full object-contain"
-                />
-              </div>
-              <h3 className="font-semibold text-xs sm:text-sm lg:text-base mb-0.5 sm:mb-1 truncate">{tech.name}</h3>
-              <p className="text-[10px] sm:text-xs lg:text-sm text-muted-foreground hidden sm:block">{tech.description}</p>
-            </motion.div>
-          ))}
-        </div>
+        {/* Technologies - Single row with wrap */}
+        <TooltipProvider delayDuration={100}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            viewport={{ once: true }}
+            className="flex flex-wrap justify-center gap-6 sm:gap-8 lg:gap-10 mb-16"
+          >
+            {technologies.map((tech, index) => (
+              <Tooltip key={tech.name}>
+                <TooltipTrigger asChild>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    viewport={{ once: true }}
+                    whileHover={{ scale: 1.15, y: -5 }}
+                    className="relative cursor-pointer"
+                  >
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 relative">
+                      {/* Glow effect on hover */}
+                      <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl opacity-0 hover:opacity-60 transition-opacity duration-300" />
+                      <Image
+                        src={tech.icon}
+                        alt={tech.name}
+                        width={96}
+                        height={96}
+                        className="w-full h-full object-contain drop-shadow-lg relative z-10"
+                      />
+                    </div>
+                  </motion.div>
+                </TooltipTrigger>
+                <TooltipContent className="font-bold text-base">
+                  <p>{tech.name}</p>
+                </TooltipContent>
+              </Tooltip>
+            ))}
+          </motion.div>
+        </TooltipProvider>
 
-        {/* AI Compatible */}
+        {/* AI Compatible - Simple inline */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
           viewport={{ once: true }}
-          className="mt-16 text-center"
+          className="text-center"
         >
           <TooltipProvider delayDuration={100}>
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              <span className="text-muted-foreground font-medium">Compatible con</span>
-              {[
-                { name: "Cursor", icon: "/ia/cursor.webp" },
-                { name: "Claude", icon: "/ia/claude.webp" },
-                { name: "ChatGPT", icon: "/ia/chatgpt.webp" },
-                { name: "Copilot", icon: "/ia/copilot.webp" },
-                { name: "Windsurf", icon: "/ia/windsurf.webp" },
-              ].map((tool) => (
+            <div className="inline-flex flex-wrap items-center justify-center gap-3 sm:gap-4 bg-card/50 backdrop-blur-sm px-6 py-4 rounded-2xl border border-border/50">
+              <span className="text-muted-foreground font-medium text-sm sm:text-base">Compatible con</span>
+              {aiTools.map((tool, index) => (
                 <Tooltip key={tool.name}>
                   <TooltipTrigger asChild>
                     <motion.div
-                      whileHover={{ scale: 1.15 }}
-                      className="w-10 h-10 rounded-lg overflow-hidden border border-border/50 bg-background/50 p-1 hover:border-primary/50 transition-colors cursor-pointer"
+                      initial={{ opacity: 0, scale: 0 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.2, delay: 0.4 + index * 0.05 }}
+                      viewport={{ once: true }}
+                      whileHover={{ scale: 1.2 }}
+                      className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg overflow-hidden bg-background/50 p-1.5 hover:bg-background/80 transition-colors cursor-pointer"
                     >
                       <Image
                         src={tool.icon}

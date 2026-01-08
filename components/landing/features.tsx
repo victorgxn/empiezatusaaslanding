@@ -326,8 +326,8 @@ export function Features() {
               >
                 <item.icon className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 text-primary" />
               </motion.div>
-              <h4 className="font-black text-sm sm:text-base lg:text-lg mb-1 sm:mb-2">{item.title}</h4>
-              <p className="text-xs sm:text-sm lg:text-base text-muted-foreground">{item.description}</p>
+              <h4 className="font-black text-base sm:text-lg lg:text-xl mb-1 sm:mb-2">{item.title}</h4>
+              <p className="text-sm sm:text-base lg:text-lg text-muted-foreground">{item.description}</p>
             </motion.div>
           ))}
         </motion.div>
