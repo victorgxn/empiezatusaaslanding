@@ -142,7 +142,7 @@ export function Testimonials() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
           viewport={{ once: true }}
-          className="mt-16 grid grid-cols-4 gap-4 sm:gap-8"
+          className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8"
         >
           {memoizedStats.map((stat) => (
             <div key={stat.label} className="text-center">

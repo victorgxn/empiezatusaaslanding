@@ -215,7 +215,7 @@ export function Features() {
           viewport={{ once: true }}
         >
           <Tabs defaultValue="auth" className="w-full">
-            <TabsList className="grid grid-cols-3 sm:grid-cols-6 gap-3 h-auto bg-background/60 backdrop-blur-sm p-3 rounded-2xl border-2 border-border/50 mb-10">
+            <TabsList className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 h-auto bg-background/60 backdrop-blur-sm p-3 rounded-2xl border-2 border-border/50 mb-10">
               {features.map((feature) => (
                 <TabsTrigger
                   key={feature.id}
@@ -286,7 +286,7 @@ export function Features() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
           viewport={{ once: true }}
-          className="mt-8 sm:mt-16 grid grid-cols-4 gap-2 sm:gap-4 lg:gap-6"
+          className="mt-8 sm:mt-16 grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 lg:gap-6"
         >
           {[
             {
