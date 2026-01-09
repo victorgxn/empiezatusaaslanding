@@ -1,0 +1,257 @@
+---
+title: Multi-Session
+description: Gestiona sesiones activas en múltiples dispositivos
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+# Multi-Session
+
+El plugin de Multi-Session permite a los usuarios ver y gestionar sus sesiones activas en diferentes dispositivos, similar a la funcionalidad de Google o GitHub.
+
+## Funcionalidades
+
+- Ver todas las sesiones activas
+- Identificar dispositivo y navegador de cada sesión
+- Cerrar sesiones individuales remotamente
+- Cerrar todas las demás sesiones de golpe
+- Limitar el número máximo de sesiones
+
+## Configuración
+
+<Steps>
+  <Step>
+    ### Habilitar el plugin en el servidor
+
+    ```typescript title="lib/auth.ts"
+    import { betterAuth } from "better-auth";
+    import { multiSession } from "better-auth/plugins";
+
+    export const auth = betterAuth({
+      // ... otras opciones
+      plugins: [
+        multiSession({
+          maximumSessions: 5, // Máximo de sesiones por usuario
+        }),
+      ],
+    });
+    ```
+  </Step>
+
+  <Step>
+    ### Configurar el cliente
+
+    ```typescript title="lib/auth-client.ts"
+    import { createAuthClient } from "better-auth/react";
+    import { multiSessionClient } from "better-auth/client/plugins";
+
+    export const authClient = createAuthClient({
+      baseURL: process.env.NEXT_PUBLIC_APP_URL,
+      plugins: [multiSessionClient()],
+    });
+
+    export const { multiSession } = authClient;
+    ```
+  </Step>
+</Steps>
+
+## Componente de gestión de sesiones
+
+```tsx title="components/settings/sessions-manager.tsx"
+"use client";
+
+import { useState, useEffect } from "react";
+import { multiSession } from "@/lib/auth-client";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { Smartphone, Monitor, Tablet, Globe, Trash2 } from "lucide-react";
+
+interface Session {
+  id: string;
+  token: string;
+  userAgent?: string;
+  ipAddress?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export function SessionsManager() {
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadSessions();
+  }, []);
+
+  const loadSessions = async () => {
+    setIsLoading(true);
+    const result = await multiSession.listSessions();
+    if (result.data) {
+      setSessions(result.data as Session[]);
+    }
+    setIsLoading(false);
+  };
+
+  const revokeSession = async (sessionToken: string) => {
+    await multiSession.revokeSession({ sessionToken });
+    toast.success("Sesión cerrada");
+    loadSessions();
+  };
+
+  const revokeAllOtherSessions = async () => {
+    await multiSession.revokeOtherSessions();
+    toast.success("Todas las demás sesiones cerradas");
+    loadSessions();
+  };
+
+  const getDeviceIcon = (userAgent?: string) => {
+    if (!userAgent) return <Globe className="h-5 w-5" />;
+
+    const ua = userAgent.toLowerCase();
+    if (ua.includes("mobile") || ua.includes("iphone") || ua.includes("android")) {
+      return <Smartphone className="h-5 w-5" />;
+    }
+    if (ua.includes("tablet") || ua.includes("ipad")) {
+      return <Tablet className="h-5 w-5" />;
+    }
+    return <Monitor className="h-5 w-5" />;
+  };
+
+  const getDeviceName = (userAgent?: string) => {
+    if (!userAgent) return "Dispositivo desconocido";
+
+    const ua = userAgent.toLowerCase();
+
+    let browser = "Navegador";
+    if (ua.includes("chrome") && !ua.includes("edg")) browser = "Chrome";
+    else if (ua.includes("firefox")) browser = "Firefox";
+    else if (ua.includes("safari") && !ua.includes("chrome")) browser = "Safari";
+    else if (ua.includes("edg")) browser = "Edge";
+
+    let os = "";
+    if (ua.includes("windows")) os = "Windows";
+    else if (ua.includes("mac")) os = "macOS";
+    else if (ua.includes("linux")) os = "Linux";
+    else if (ua.includes("iphone")) os = "iPhone";
+    else if (ua.includes("android")) os = "Android";
+
+    return `${browser}${os ? ` en ${os}` : ""}`;
+  };
+
+  if (isLoading) {
+    return <div>Cargando sesiones...</div>;
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-medium">Sesiones activas ({sessions.length})</h3>
+        {sessions.length > 1 && (
+          <Button variant="outline" size="sm" onClick={revokeAllOtherSessions}>
+            Cerrar otras sesiones
+          </Button>
+        )}
+      </div>
+
+      <div className="space-y-3">
+        {sessions.map((session) => (
+          <div
+            key={session.id}
+            className="flex items-center justify-between p-4 border rounded-lg"
+          >
+            <div className="flex items-center gap-4">
+              <div className="p-2 bg-muted rounded-lg">
+                {getDeviceIcon(session.userAgent)}
+              </div>
+              <div>
+                <p className="font-medium">{getDeviceName(session.userAgent)}</p>
+                <p className="text-sm text-muted-foreground">
+                  {session.ipAddress} · Última actividad:{" "}
+                  {new Date(session.updatedAt).toLocaleDateString("es-ES", {
+                    day: "numeric",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => revokeSession(session.token)}
+            >
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+## API disponible
+
+### Listar sesiones
+
+```typescript
+const { data: sessions } = await multiSession.listSessions();
+```
+
+Retorna un array de sesiones con información de cada dispositivo.
+
+### Cerrar una sesión
+
+```typescript
+await multiSession.revokeSession({
+  sessionToken: "token-de-la-sesion",
+});
+```
+
+Cierra la sesión especificada. El dispositivo tendrá que volver a iniciar sesión.
+
+### Cerrar todas las demás sesiones
+
+```typescript
+await multiSession.revokeOtherSessions();
+```
+
+Cierra todas las sesiones excepto la actual. Útil cuando el usuario sospecha de acceso no autorizado.
+
+## Información de la sesión
+
+Cada sesión incluye:
+
+| Campo | Descripción |
+|-------|-------------|
+| `id` | Identificador único |
+| `token` | Token de la sesión |
+| `userAgent` | Navegador y sistema operativo |
+| `ipAddress` | Dirección IP del dispositivo |
+| `createdAt` | Fecha de inicio de sesión |
+| `updatedAt` | Última actividad |
+
+## Límite de sesiones
+
+Configura el número máximo de sesiones activas por usuario:
+
+```typescript
+multiSession({
+  maximumSessions: 5, // Por defecto ilimitado
+})
+```
+
+Cuando se alcanza el límite, la sesión más antigua se cierra automáticamente.
+
+## Casos de uso
+
+1. **Seguridad**: Permitir al usuario ver dónde está logueado
+2. **Cierre remoto**: Cerrar sesión en dispositivos perdidos
+3. **Control de acceso**: Limitar sesiones simultáneas para planes gratuitos
+4. **Auditoría**: Registro de actividad por dispositivo
+
+<Callout type="info">
+  Se recomienda mostrar el gestor de sesiones en la página de configuración de seguridad del usuario.
+</Callout>

@@ -1,0 +1,215 @@
+---
+title: Panel de Administración
+description: Gestiona usuarios, roles y permisos desde el panel de admin
+---
+
+# Panel de Administración
+
+EmpiezaTuSaaS incluye un panel de administración completo para gestionar tu plataforma.
+
+## Características
+
+- **Gestión de usuarios**: Lista, crea, edita y elimina usuarios
+- **Sistema de roles**: admin, superadmin, user
+- **Baneos**: Banea y desbanea usuarios con razón opcional
+- **Impersonación**: Accede como cualquier usuario para soporte
+- **Estadísticas**: Dashboard con métricas de tu plataforma
+
+## Acceso al Panel
+
+El panel está disponible en `/admin` y solo es accesible para usuarios con rol `admin` o `superadmin`.
+
+```typescript
+// El acceso se verifica en el layout de admin
+const userRole = session?.user?.role;
+if (!["admin", "superadmin"].includes(userRole)) {
+  redirect("/dashboard");
+}
+```
+
+## Crear el primer admin
+
+Al inicio, no tendrás usuarios admin. Puedes crear uno de dos formas:
+
+### Opción 1: Via base de datos
+
+```sql
+UPDATE users SET role = 'admin' WHERE email = 'tu@email.com';
+```
+
+### Opción 2: Via código
+
+Crea un endpoint temporal:
+
+```typescript title="app/api/setup-admin/route.ts"
+import { db } from "@/lib/db";
+import { NextResponse } from "next/server";
+
+export async function POST(request: Request) {
+  const { email, secret } = await request.json();
+
+  // Verificar secreto de setup
+  if (secret !== process.env.SETUP_SECRET) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
+  await db.user.update({
+    where: { email },
+    data: { role: "admin" },
+  });
+
+  return NextResponse.json({ success: true });
+}
+```
+
+<Callout type="warning">
+Elimina el endpoint de setup después de crear tu primer admin.
+</Callout>
+
+## Gestión de usuarios
+
+### Listar usuarios
+
+El componente `UsersTable` usa Better Auth Admin API:
+
+```typescript
+const { data } = await admin.listUsers({
+  limit: 50,
+  offset: 0,
+  sortBy: "createdAt",
+  sortDirection: "desc",
+  filterBy: "email",
+  filterValue: "@company.com",
+});
+```
+
+### Cambiar rol
+
+```typescript
+await admin.setRole({
+  userId: "user-id",
+  role: "admin", // o "user", "superadmin"
+});
+```
+
+### Banear usuario
+
+```typescript
+await admin.banUser({
+  userId: "user-id",
+  reason: "Violación de términos",
+  banUntil: new Date("2025-12-31"), // Opcional
+});
+```
+
+### Desbanear usuario
+
+```typescript
+await admin.unbanUser({
+  userId: "user-id",
+});
+```
+
+### Impersonar usuario
+
+Útil para soporte al cliente:
+
+```typescript
+await admin.impersonateUser({
+  userId: "user-id",
+});
+// El admin ahora tiene sesión como ese usuario
+```
+
+## Analytics
+
+El panel incluye una página de analytics completa en `/admin/analytics` con:
+
+### Métricas disponibles
+
+- **Usuarios totales**: Conteo de usuarios registrados
+- **Crecimiento mensual**: Comparación con el mes anterior
+- **Nuevos usuarios**: Este mes y esta semana
+- **Suscripciones activas**: Con tasa de conversión
+- **MRR estimado**: Ingresos mensuales recurrentes
+
+### Gráficos
+
+```typescript title="app/api/admin/analytics/route.ts"
+// Registros por día (últimos 30 días)
+const usersByDay = await db.user.groupBy({
+  by: ["createdAt"],
+  where: { createdAt: { gte: last30Days } },
+  _count: true,
+});
+
+// Suscripciones por estado
+const subscriptionsByStatus = await db.subscription.groupBy({
+  by: ["status"],
+  _count: true,
+});
+```
+
+### Personalizar métricas
+
+Puedes añadir nuevas métricas editando `app/api/admin/analytics/route.ts`:
+
+```typescript
+// Ejemplo: añadir métrica de revenue
+const revenueThisMonth = await db.subscription.aggregate({
+  _sum: { amount: true },
+  where: {
+    status: "active",
+    createdAt: { gte: startOfMonth },
+  },
+});
+```
+
+## Estructura de archivos
+
+```
+app/
+└── (admin)/
+    ├── layout.tsx           # Verifica rol admin
+    └── admin/
+        ├── page.tsx         # Dashboard de admin
+        ├── users/
+        │   └── page.tsx     # Gestión de usuarios
+        └── analytics/
+            └── page.tsx     # Métricas y gráficos
+
+app/api/admin/
+└── analytics/
+    └── route.ts             # API de analytics
+
+components/
+└── admin/
+    ├── sidebar.tsx          # Navegación lateral
+    ├── header.tsx           # Header con búsqueda
+    ├── users-table.tsx      # Tabla de usuarios
+    └── stats-cards.tsx      # Tarjetas de estadísticas
+```
+
+## Personalización
+
+### Añadir nuevas acciones
+
+Puedes extender el menú de acciones en `users-table.tsx`:
+
+```tsx
+<DropdownMenuItem onClick={() => handleCustomAction(user.id)}>
+  <YourIcon className="mr-2 h-4 w-4" />
+  Tu acción personalizada
+</DropdownMenuItem>
+```
+
+### Añadir nuevas páginas admin
+
+1. Crea la página en `app/(admin)/admin/tu-pagina/page.tsx`
+2. Añade la ruta al sidebar en `components/admin/sidebar.tsx`
+
+## Seguridad
+
+- Todas las rutas admin están protegidas por middleware
+- Las API de admin verifican el rol en el servidor
+- Los tokens de sesión son validados en cada request

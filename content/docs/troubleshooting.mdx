@@ -1,0 +1,511 @@
+---
+title: Troubleshooting
+description: Soluciones a errores comunes y problemas frecuentes
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+
+# Troubleshooting
+
+Guía de soluciones para los errores más comunes al desarrollar con EmpiezaTuSaaS.
+
+## Errores de instalación
+
+<Accordions>
+<Accordion title="npm install falla con errores de permisos">
+**Síntoma:** Error `EACCES: permission denied` al instalar dependencias.
+
+**Solución:**
+```bash
+# Opción 1: Usar npx con sudo (no recomendado)
+sudo npm install
+
+# Opción 2: Cambiar permisos de npm (recomendado)
+mkdir ~/.npm-global
+npm config set prefix '~/.npm-global'
+echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.bashrc
+source ~/.bashrc
+```
+</Accordion>
+
+<Accordion title="Error: Cannot find module '@prisma/client'">
+**Síntoma:** El proyecto no encuentra el cliente de Prisma.
+
+**Solución:**
+```bash
+# Regenerar el cliente de Prisma
+npx prisma generate
+
+# Si persiste, reinstalar
+rm -rf node_modules
+npm install
+npx prisma generate
+```
+</Accordion>
+
+<Accordion title="Error de versión de Node.js">
+**Síntoma:** Errores de sintaxis o módulos no encontrados.
+
+**Solución:**
+```bash
+# Verificar versión (debe ser >= 18)
+node --version
+
+# Usar nvm para instalar versión correcta
+nvm install 20
+nvm use 20
+```
+</Accordion>
+</Accordions>
+
+## Errores de base de datos
+
+<Accordions>
+<Accordion title="Error: P1001 - Can't reach database server">
+**Síntoma:** Prisma no puede conectar a PostgreSQL.
+
+**Causas posibles:**
+1. PostgreSQL no está corriendo
+2. URL de conexión incorrecta
+3. Puerto bloqueado por firewall
+
+**Solución:**
+```bash
+# Verificar que PostgreSQL está corriendo
+sudo systemctl status postgresql
+
+# Verificar conexión
+psql -h localhost -U postgres -d tu_database
+
+# Verificar DATABASE_URL en .env
+# Formato: postgresql://USER:PASSWORD@HOST:PORT/DATABASE
+```
+</Accordion>
+
+<Accordion title="Error: P2002 - Unique constraint violation">
+**Síntoma:** Error al crear un registro que viola una restricción única.
+
+**Solución:**
+```typescript
+// En lugar de create, usa upsert
+await db.user.upsert({
+  where: { email: "user@example.com" },
+  update: { name: "Updated Name" },
+  create: { email: "user@example.com", name: "New User" },
+});
+```
+</Accordion>
+
+<Accordion title="Error: P2025 - Record not found">
+**Síntoma:** Error al actualizar o eliminar un registro que no existe.
+
+**Solución:**
+```typescript
+// Verificar que el registro existe antes de operar
+const user = await db.user.findUnique({
+  where: { id: userId },
+});
+
+if (!user) {
+  throw new Error("Usuario no encontrado");
+}
+
+await db.user.update({
+  where: { id: userId },
+  data: { ... },
+});
+```
+</Accordion>
+
+<Accordion title="Error al aplicar migraciones">
+**Síntoma:** `prisma migrate dev` falla.
+
+**Solución:**
+```bash
+# Resetear base de datos (SOLO en desarrollo)
+npx prisma migrate reset
+
+# Si hay conflictos, forzar sincronización
+npx prisma db push --force-reset
+
+# Generar cliente después de migrar
+npx prisma generate
+```
+
+<Callout type="warning">
+`migrate reset` elimina todos los datos. Nunca usar en producción.
+</Callout>
+</Accordion>
+</Accordions>
+
+## Errores de autenticación
+
+<Accordions>
+<Accordion title="Error: Invalid session token">
+**Síntoma:** Usuario logueado pero recibe errores de sesión.
+
+**Causas posibles:**
+1. Cookie expirada
+2. Secreto de auth cambiado
+3. Sesión eliminada de la base de datos
+
+**Solución:**
+```typescript
+// Verificar que BETTER_AUTH_SECRET no cambió
+// En .env:
+BETTER_AUTH_SECRET="tu-secreto-fijo"
+
+// Limpiar cookies del navegador
+// O desde código:
+await signOut();
+```
+</Accordion>
+
+<Accordion title="OAuth redirect error">
+**Síntoma:** Error al hacer login con Google/GitHub.
+
+**Checklist:**
+1. Verificar que las credenciales OAuth están configuradas
+2. Verificar URLs de callback en la consola del proveedor
+3. Verificar `BETTER_AUTH_URL` en .env
+
+```env
+# URLs correctas para OAuth
+BETTER_AUTH_URL="http://localhost:3000"  # desarrollo
+BETTER_AUTH_URL="https://tudominio.com"  # producción
+
+# Google OAuth - Agregar esta URL de callback en Google Cloud Console:
+# http://localhost:3000/api/auth/callback/google
+
+# GitHub OAuth - Agregar esta URL de callback en GitHub Settings:
+# http://localhost:3000/api/auth/callback/github
+```
+</Accordion>
+
+<Accordion title="CORS error en API de auth">
+**Síntoma:** Error de CORS al llamar a la API de autenticación.
+
+**Solución:**
+```typescript title="lib/auth.ts"
+export const auth = betterAuth({
+  // ...otras opciones
+  trustedOrigins: [
+    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+    // Añadir otros orígenes si es necesario
+    "https://tudominio.com",
+  ],
+});
+```
+</Accordion>
+
+<Accordion title="El usuario no puede acceder a rutas protegidas">
+**Síntoma:** Usuario logueado pero redirigido a login.
+
+**Verificar:**
+```typescript
+// 1. Verificar nombre de cookie
+// En proxy.ts:
+const sessionToken = request.cookies.get("better-auth.session_token")?.value;
+
+// 2. Verificar que la sesión existe en DB
+// Ejecutar en Prisma Studio o SQL:
+SELECT * FROM sessions WHERE "userId" = 'user-id';
+
+// 3. Verificar que la cookie tiene el dominio correcto
+// En navegador: DevTools > Application > Cookies
+```
+</Accordion>
+</Accordions>
+
+## Errores de Stripe
+
+<Accordions>
+<Accordion title="Error: No such price">
+**Síntoma:** Error al crear checkout con precio no encontrado.
+
+**Solución:**
+```env
+# Verificar que los Price IDs son correctos
+# Obtener de Stripe Dashboard > Products > Prices
+STRIPE_STARTER_PRICE_ID="price_xxxxx"
+STRIPE_PRO_PRICE_ID="price_yyyyy"
+```
+</Accordion>
+
+<Accordion title="Webhook signature verification failed">
+**Síntoma:** Los webhooks de Stripe fallan con error de firma.
+
+**Solución:**
+```env
+# Usar el secreto correcto de webhook
+# Para desarrollo (Stripe CLI):
+STRIPE_WEBHOOK_SECRET="whsec_xxxxx"
+
+# Para producción (Dashboard > Webhooks):
+STRIPE_WEBHOOK_SECRET="whsec_yyyyy"
+```
+
+```bash
+# Desarrollo: usar Stripe CLI para reenviar webhooks
+stripe listen --forward-to localhost:3000/api/stripe/webhooks
+```
+</Accordion>
+
+<Accordion title="Checkout no redirige">
+**Síntoma:** El botón de checkout no hace nada o da error.
+
+**Verificar:**
+```typescript
+// 1. Verificar que Stripe está configurado
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error("STRIPE_SECRET_KEY no configurada");
+}
+
+// 2. Verificar URLs de callback
+const session = await stripe.checkout.sessions.create({
+  success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
+  cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?canceled=true`,
+  // ...
+});
+```
+</Accordion>
+
+<Accordion title="Suscripción no se actualiza en DB">
+**Síntoma:** Pago exitoso pero la suscripción no aparece.
+
+**Verificar:**
+1. Webhook endpoint está configurado en Stripe Dashboard
+2. El endpoint devuelve 200 después de procesar
+
+```typescript title="app/api/stripe/webhooks/route.ts"
+// Siempre devolver 200 para que Stripe no reintente
+export async function POST(req: Request) {
+  try {
+    // Procesar evento...
+    return new Response(JSON.stringify({ received: true }), {
+      status: 200,
+    });
+  } catch (error) {
+    console.error("[WEBHOOK_ERROR]", error);
+    // Aún así devolver 200 para evitar reintentos
+    return new Response(JSON.stringify({ error: "Webhook processing failed" }), {
+      status: 200,
+    });
+  }
+}
+```
+</Accordion>
+</Accordions>
+
+## Errores de email
+
+<Accordions>
+<Accordion title="Emails no se envían">
+**Síntoma:** No llegan los emails de verificación o bienvenida.
+
+**Verificar:**
+```env
+# 1. API key de Resend configurada
+RESEND_API_KEY="re_xxxxx"
+
+# 2. Dominio verificado en Resend (producción)
+EMAIL_FROM="EmpiezaTuSaaS <noreply@tudominio.com>"
+
+# 3. Para desarrollo, usar dominio de prueba
+EMAIL_FROM="EmpiezaTuSaaS <delivered@resend.dev>"
+```
+</Accordion>
+
+<Accordion title="Error: Sender domain not verified">
+**Síntoma:** Resend rechaza el envío por dominio no verificado.
+
+**Solución:**
+1. Ve a [Resend Dashboard](https://resend.com/domains)
+2. Añade tu dominio
+3. Configura los registros DNS (MX, SPF, DKIM)
+4. Espera verificación (puede tardar hasta 48h)
+
+```env
+# Mientras tanto, usa el dominio de prueba de Resend
+EMAIL_FROM="EmpiezaTuSaaS <delivered@resend.dev>"
+```
+</Accordion>
+</Accordions>
+
+## Errores de i18n
+
+<Accordions>
+<Accordion title="Error: Missing message for key">
+**Síntoma:** Aparece la clave en vez del texto traducido.
+
+**Solución:**
+```bash
+# Verificar que la clave existe en todos los archivos
+# Ejecutar script de validación
+node scripts/validate-translations.js
+```
+
+```json title="messages/es.json"
+{
+  "hero": {
+    "title": "Tu título aquí"  // Añadir clave faltante
+  }
+}
+```
+</Accordion>
+
+<Accordion title="La traducción no cambia al cambiar idioma">
+**Síntoma:** El idioma cambia en la URL pero el contenido no.
+
+**Solución:**
+```typescript
+// Asegurarse de usar router.refresh() después de cambiar idioma
+const handleLocaleChange = (newLocale: string) => {
+  document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=31536000`;
+  router.push(newPath);
+  router.refresh(); // Importante!
+};
+```
+</Accordion>
+</Accordions>
+
+## Errores de build
+
+<Accordions>
+<Accordion title="Error: Dynamic server usage">
+**Síntoma:** Error al hacer build que menciona uso dinámico del servidor.
+
+**Causa:** Usar funciones de servidor en componentes estáticos.
+
+**Solución:**
+```typescript
+// Opción 1: Marcar la página como dinámica
+export const dynamic = "force-dynamic";
+
+// Opción 2: Usar generateStaticParams para rutas dinámicas
+export async function generateStaticParams() {
+  return [{ slug: "post-1" }, { slug: "post-2" }];
+}
+```
+</Accordion>
+
+<Accordion title="Error: Module not found">
+**Síntoma:** Módulo no encontrado durante build.
+
+**Solución:**
+```bash
+# Limpiar caché y reinstalar
+rm -rf .next
+rm -rf node_modules
+npm install
+npm run build
+```
+</Accordion>
+
+<Accordion title="Build muy lento">
+**Síntoma:** El build tarda más de 5 minutos.
+
+**Optimizaciones:**
+```typescript title="next.config.ts"
+const nextConfig = {
+  // Excluir paquetes del bundle del servidor
+  serverExternalPackages: ["@prisma/client", "bcryptjs"],
+
+  // Optimizar imágenes
+  images: {
+    unoptimized: process.env.NODE_ENV === "development",
+  },
+};
+```
+</Accordion>
+</Accordions>
+
+## Errores de despliegue
+
+<Accordions>
+<Accordion title="Error 500 en producción">
+**Síntoma:** La app funciona en local pero da error 500 en producción.
+
+**Checklist:**
+1. Verificar todas las variables de entorno en Vercel
+2. Verificar conexión a base de datos
+3. Revisar logs de Vercel
+
+```bash
+# Ver logs de Vercel
+vercel logs --follow
+```
+</Accordion>
+
+<Accordion title="Prisma no funciona en Vercel">
+**Síntoma:** Error de Prisma Client en producción.
+
+**Solución:**
+```json title="package.json"
+{
+  "scripts": {
+    "postinstall": "prisma generate"
+  }
+}
+```
+
+```typescript title="vercel.json"
+{
+  "buildCommand": "prisma generate && next build"
+}
+```
+</Accordion>
+
+<Accordion title="Error de memoria en build">
+**Síntoma:** Build falla por falta de memoria.
+
+**Solución:**
+```json title="package.json"
+{
+  "scripts": {
+    "build": "NODE_OPTIONS='--max-old-space-size=4096' next build"
+  }
+}
+```
+</Accordion>
+</Accordions>
+
+## Comandos útiles de diagnóstico
+
+```bash
+# Verificar versiones
+node --version
+npm --version
+npx prisma --version
+
+# Limpiar caché completo
+rm -rf .next node_modules .prisma
+npm install
+npx prisma generate
+
+# Verificar variables de entorno
+npx next info
+
+# Verificar conexión a DB
+npx prisma db pull
+
+# Ver logs de Stripe
+stripe logs tail
+
+# Probar webhooks localmente
+stripe listen --forward-to localhost:3000/api/stripe/webhooks
+
+# Verificar estado de Prisma
+npx prisma studio
+```
+
+## ¿Aún tienes problemas?
+
+<Callout type="info">
+Si no encuentras la solución aquí:
+
+1. Revisa los [issues de GitHub](https://github.com/tu-repo/issues)
+2. Busca en [Stack Overflow](https://stackoverflow.com/questions/tagged/nextjs)
+3. Consulta la documentación oficial de cada tecnología
+</Callout>

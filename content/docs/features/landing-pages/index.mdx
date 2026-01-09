@@ -1,0 +1,243 @@
+---
+title: Landing Pages
+description: 3 variantes de landing page listas para usar
+---
+
+# Landing Pages
+
+EmpiezaTuSaaS incluye 3 variantes de landing page pre-creadas y optimizadas para conversión.
+
+## Variantes disponibles
+
+### 1. Landing Page Principal
+
+La landing completa con todas las secciones.
+
+**Ruta**: `/`
+
+**Incluye**:
+- Hero con CTA y prueba social
+- Sección de características
+- Precios con toggle mensual/anual
+- FAQ accordion
+- CTA final
+- Footer con links
+
+```tsx title="app/(marketing)/page.tsx"
+import { Hero, Features, Pricing, FAQ, CTA } from "@/components/landing";
+
+export default function HomePage() {
+  return (
+    <>
+      <Hero />
+      <Features />
+      <Pricing />
+      <FAQ />
+      <CTA />
+    </>
+  );
+}
+```
+
+### 2. Waitlist (Lista de espera)
+
+Perfecta para validar tu idea antes de lanzar.
+
+**Ruta**: `/waitlist`
+
+**Incluye**:
+- Hero con formulario de email
+- Contador de personas en lista
+- Sección de características
+- FAQ
+
+```tsx title="app/(marketing)/waitlist/page.tsx"
+import { HeroWaitlist, Features, FAQ } from "@/components/landing";
+
+export default function WaitlistPage() {
+  return (
+    <>
+      <HeroWaitlist
+        productName="Tu Producto"
+        headline="Algo increíble está en camino"
+        subheadline="Sé el primero en acceder..."
+        waitlistCount={247}
+      />
+      <Features />
+      <FAQ />
+    </>
+  );
+}
+```
+
+### 3. Pre-sale (Preventa)
+
+Ideal para lanzar con oferta de precio especial.
+
+**Ruta**: `/presale`
+
+**Incluye**:
+- Hero con tarjeta de precio
+- Badge de descuento
+- Barra de progreso de plazas
+- Características incluidas
+- FAQ
+
+```tsx title="app/(marketing)/presale/page.tsx"
+import { HeroPresale, Features, FAQ } from "@/components/landing";
+
+export default function PresalePage() {
+  return (
+    <>
+      <HeroPresale
+        productName="Tu Producto"
+        headline="Consigue acceso de por vida"
+        originalPrice={199}
+        salePrice={79}
+        spotsLeft={23}
+        totalSpots={100}
+        features={[
+          "Acceso de por vida",
+          "Todas las actualizaciones futuras",
+          "Soporte prioritario",
+        ]}
+        launchDate="15 de Febrero"
+      />
+      <Features />
+      <FAQ />
+    </>
+  );
+}
+```
+
+## Componentes de Landing
+
+Todos los componentes están en `components/landing/`:
+
+| Componente | Descripción |
+|------------|-------------|
+| `Navbar` | Navegación responsive con menú móvil |
+| `Hero` | Hero principal con CTA |
+| `HeroWaitlist` | Hero con formulario de email |
+| `HeroPresale` | Hero con tarjeta de precio |
+| `Features` | Grid de 9 características |
+| `Pricing` | Sección de precios |
+| `FAQ` | Accordion de preguntas frecuentes |
+| `CTA` | Call-to-action final |
+| `Footer` | Footer con links |
+
+## Personalización
+
+### Cambiar textos
+
+Edita los archivos de traducción en `messages/`:
+
+```json title="messages/es.json"
+{
+  "hero": {
+    "title": "Tu título personalizado",
+    "subtitle": "Tu subtítulo personalizado"
+  }
+}
+```
+
+### Cambiar características
+
+Edita el componente `Features`:
+
+```tsx title="components/landing/features.tsx"
+const features = [
+  {
+    title: "Tu característica",
+    description: "Descripción de la característica",
+    icon: YourIcon,
+  },
+  // ...
+];
+```
+
+### Cambiar FAQ
+
+Edita el componente `FAQ`:
+
+```tsx title="components/landing/faq.tsx"
+const faqs = [
+  {
+    question: "¿Tu pregunta?",
+    answer: "Tu respuesta.",
+  },
+  // ...
+];
+```
+
+## Animaciones
+
+Todos los componentes usan Framer Motion para animaciones suaves:
+
+```tsx
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.5 }}
+>
+  {/* Contenido */}
+</motion.div>
+```
+
+## Responsive Design
+
+Todas las landings son 100% responsive:
+
+- **Mobile**: Stack vertical, menú hamburguesa
+- **Tablet**: Grid de 2 columnas
+- **Desktop**: Grid de 3 columnas, navegación completa
+
+## Cambiar entre variantes
+
+Para cambiar la landing principal, simplemente importa el Hero que desees:
+
+```tsx title="app/(marketing)/page.tsx"
+// Opción 1: Landing normal
+import { Hero } from "@/components/landing";
+
+// Opción 2: Waitlist
+import { HeroWaitlist as Hero } from "@/components/landing";
+
+// Opción 3: Presale
+import { HeroPresale as Hero } from "@/components/landing";
+```
+
+## A/B Testing
+
+Puedes hacer A/B testing usando middleware:
+
+```tsx title="proxy.ts"
+export function proxy(request: NextRequest) {
+  // 50% usuarios ven waitlist
+  if (Math.random() < 0.5) {
+    return NextResponse.rewrite(new URL("/waitlist", request.url));
+  }
+  return NextResponse.next();
+}
+```
+
+## Integrar formulario de waitlist
+
+El componente `HeroWaitlist` incluye un formulario simulado. Para conectarlo a tu backend:
+
+```tsx title="components/landing/hero-waitlist.tsx"
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  // Conectar con tu API
+  const response = await fetch("/api/waitlist", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+
+  if (response.ok) {
+    setIsSubmitted(true);
+    toast.success("¡Te has unido a la lista de espera!");
+  }
+};
+```

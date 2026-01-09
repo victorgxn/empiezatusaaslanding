@@ -1,0 +1,451 @@
+---
+title: Ship in 5 Minutes
+description: Lanza tu SaaS completo en 5 minutos - Landing, Auth, Pagos y Deploy
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Tabs, Tab } from 'fumadocs-ui/components/tabs';
+
+# Ship in 5 Minutes
+
+Lanza tu SaaS **completamente funcional** en 5 minutos. Al final tendrás:
+
+- Landing page profesional
+- Autenticación con Google
+- Pagos con Stripe
+- Panel de usuario y admin
+- Desplegado en producción
+
+<Callout type="info">
+  **Requisitos previos**: Node.js 18+, cuenta de GitHub, cuenta de Vercel (gratis), cuenta de Stripe (gratis para test).
+</Callout>
+
+---
+
+## Minuto 1: Proyecto y Base de Datos
+
+<Steps>
+  <Step>
+    ### Clona e instala
+
+    ```bash
+    git clone https://github.com/empiezatusaas/boilerplate mi-saas
+    cd mi-saas
+    npm install
+    ```
+  </Step>
+
+  <Step>
+    ### Crea tu base de datos PostgreSQL
+
+    Usa **Neon** (recomendado, gratis):
+
+    1. Ve a [neon.tech](https://neon.tech) y crea una cuenta
+    2. Crea un nuevo proyecto
+    3. Copia el connection string
+
+    <Callout>
+      Alternativas: [Railway](https://railway.app), [Supabase](https://supabase.com), [PlanetScale](https://planetscale.com)
+    </Callout>
+  </Step>
+
+  <Step>
+    ### Configura las variables de entorno
+
+    ```bash
+    cp .env.example .env
+    ```
+
+    Edita `.env` con tus valores:
+
+    ```env
+    # App
+    NEXT_PUBLIC_APP_URL="http://localhost:3000"
+
+    # Database (pega tu connection string de Neon)
+    DATABASE_URL="postgresql://user:pass@ep-xxx.region.aws.neon.tech/neondb?sslmode=require"
+
+    # Auth (genera un secreto seguro)
+    BETTER_AUTH_SECRET="genera-un-string-aleatorio-de-32-caracteres"
+    BETTER_AUTH_URL="http://localhost:3000"
+    ```
+
+    <Callout type="warn">
+      Para generar un secreto seguro: `openssl rand -base64 32`
+    </Callout>
+  </Step>
+
+  <Step>
+    ### Ejecuta las migraciones
+
+    ```bash
+    npx prisma migrate dev --name init
+    ```
+
+    Esto crea todas las tablas necesarias en tu base de datos.
+  </Step>
+</Steps>
+
+---
+
+## Minuto 2: Autenticación con Google
+
+<Steps>
+  <Step>
+    ### Crea credenciales en Google Cloud
+
+    1. Ve a [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+    2. Crea un proyecto nuevo (o usa uno existente)
+    3. Ve a **Credentials** → **Create Credentials** → **OAuth client ID**
+    4. Tipo: **Web application**
+    5. Configura los orígenes autorizados:
+
+    ```
+    Authorized JavaScript origins:
+    http://localhost:3000
+
+    Authorized redirect URIs:
+    http://localhost:3000/api/auth/callback/google
+    ```
+
+    6. Copia el **Client ID** y **Client Secret**
+  </Step>
+
+  <Step>
+    ### Añade las credenciales a tu `.env`
+
+    ```env
+    # Google OAuth
+    GOOGLE_CLIENT_ID="tu-client-id.apps.googleusercontent.com"
+    GOOGLE_CLIENT_SECRET="tu-client-secret"
+    ```
+  </Step>
+
+  <Step>
+    ### Prueba el login
+
+    ```bash
+    npm run dev
+    ```
+
+    1. Abre [http://localhost:3000](http://localhost:3000)
+    2. Click en **"Comenzar"** o **"Iniciar sesión"**
+    3. Click en **"Continuar con Google"**
+    4. Deberías ver el dashboard
+  </Step>
+</Steps>
+
+---
+
+## Minuto 3: Pagos con Stripe
+
+<Steps>
+  <Step>
+    ### Obtén tus claves de Stripe
+
+    1. Ve a [dashboard.stripe.com](https://dashboard.stripe.com)
+    2. Activa el **modo test** (toggle arriba a la derecha)
+    3. Ve a **Developers** → **API keys**
+    4. Copia la **Publishable key** y **Secret key**
+  </Step>
+
+  <Step>
+    ### Crea tus productos y precios
+
+    En Stripe Dashboard → **Products** → **Add product**:
+
+    **Producto 1: Plan Starter**
+    - Nombre: `Starter`
+    - Precio mensual: `9.00 EUR` (recurring)
+    - Precio anual: `90.00 EUR` (recurring)
+
+    **Producto 2: Plan Pro**
+    - Nombre: `Pro`
+    - Precio mensual: `29.00 EUR` (recurring)
+    - Precio anual: `290.00 EUR` (recurring)
+
+    Copia los **Price IDs** (empiezan con `price_`)
+  </Step>
+
+  <Step>
+    ### Configura el webhook
+
+    1. Ve a **Developers** → **Webhooks**
+    2. Click **Add endpoint**
+    3. URL: `https://tu-dominio.vercel.app/api/stripe/webhooks`
+    4. Eventos a escuchar:
+       - `checkout.session.completed`
+       - `customer.subscription.updated`
+       - `customer.subscription.deleted`
+       - `invoice.payment_succeeded`
+       - `invoice.payment_failed`
+    5. Copia el **Webhook signing secret**
+
+    <Callout>
+      Para desarrollo local usa [Stripe CLI](https://stripe.com/docs/stripe-cli):
+      ```bash
+      stripe listen --forward-to localhost:3000/api/stripe/webhooks
+      ```
+    </Callout>
+  </Step>
+
+  <Step>
+    ### Añade las variables de Stripe
+
+    ```env
+    # Stripe
+    STRIPE_SECRET_KEY="sk_test_..."
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="pk_test_..."
+    STRIPE_WEBHOOK_SECRET="whsec_..."
+
+    # Price IDs (los que copiaste de Stripe)
+    STRIPE_STARTER_MONTHLY_PRICE_ID="price_..."
+    STRIPE_STARTER_YEARLY_PRICE_ID="price_..."
+    STRIPE_PRO_MONTHLY_PRICE_ID="price_..."
+    STRIPE_PRO_YEARLY_PRICE_ID="price_..."
+    ```
+  </Step>
+</Steps>
+
+---
+
+## Minuto 4: Personaliza tu Landing
+
+<Steps>
+  <Step>
+    ### Configura tu marca
+
+    Edita `config/site.ts`:
+
+    ```typescript
+    export const siteConfig = {
+      name: "Tu SaaS",
+      description: "La descripción de tu producto increíble",
+      url: "https://tusaas.com",
+      ogImage: "https://tusaas.com/og.png",
+      creator: "Tu Nombre",
+      keywords: ["saas", "tu-nicho", "productividad"],
+    };
+    ```
+  </Step>
+
+  <Step>
+    ### Personaliza el Hero
+
+    Edita `components/landing/hero.tsx`:
+
+    ```tsx
+    // Cambia el título principal
+    <h1>
+      Tu headline que <span className="text-primary">engancha</span>
+    </h1>
+
+    // Cambia el subtítulo
+    <p>
+      Tu propuesta de valor clara y concisa que explica
+      qué problema resuelves.
+    </p>
+    ```
+  </Step>
+
+  <Step>
+    ### Configura los precios
+
+    Edita `config/stripe.ts`:
+
+    ```typescript
+    export const pricingPlans = [
+      {
+        name: "Starter",
+        description: "Perfecto para empezar",
+        price: { monthly: 9, yearly: 90 },
+        priceIds: {
+          monthly: process.env.STRIPE_STARTER_MONTHLY_PRICE_ID!,
+          yearly: process.env.STRIPE_STARTER_YEARLY_PRICE_ID!,
+        },
+        features: [
+          "Hasta 1,000 usuarios",
+          "5 GB de almacenamiento",
+          "Soporte por email",
+          "API básica",
+        ],
+      },
+      {
+        name: "Pro",
+        description: "Para negocios en crecimiento",
+        price: { monthly: 29, yearly: 290 },
+        popular: true, // Marca como destacado
+        priceIds: {
+          monthly: process.env.STRIPE_PRO_MONTHLY_PRICE_ID!,
+          yearly: process.env.STRIPE_PRO_YEARLY_PRICE_ID!,
+        },
+        features: [
+          "Usuarios ilimitados",
+          "50 GB de almacenamiento",
+          "Soporte prioritario",
+          "API completa",
+          "Integraciones avanzadas",
+        ],
+      },
+    ];
+    ```
+  </Step>
+
+  <Step>
+    ### Actualiza las FAQs
+
+    Edita `components/landing/faq.tsx` con las preguntas frecuentes de tu producto.
+  </Step>
+</Steps>
+
+---
+
+## Minuto 5: Deploy a Producción
+
+<Steps>
+  <Step>
+    ### Sube tu código a GitHub
+
+    ```bash
+    git add .
+    git commit -m "Initial commit - Mi SaaS"
+    git remote set-url origin https://github.com/tu-usuario/mi-saas.git
+    git push -u origin main
+    ```
+  </Step>
+
+  <Step>
+    ### Despliega en Vercel
+
+    1. Ve a [vercel.com/new](https://vercel.com/new)
+    2. Importa tu repositorio de GitHub
+    3. Vercel detectará Next.js automáticamente
+    4. Añade todas las variables de entorno:
+
+    ```env
+    NEXT_PUBLIC_APP_URL=https://tu-proyecto.vercel.app
+    DATABASE_URL=postgresql://...
+    BETTER_AUTH_SECRET=...
+    BETTER_AUTH_URL=https://tu-proyecto.vercel.app
+    GOOGLE_CLIENT_ID=...
+    GOOGLE_CLIENT_SECRET=...
+    STRIPE_SECRET_KEY=...
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=...
+    STRIPE_WEBHOOK_SECRET=...
+    # ... resto de variables
+    ```
+
+    5. Click **Deploy**
+  </Step>
+
+  <Step>
+    ### Actualiza las URLs de OAuth
+
+    Vuelve a Google Cloud Console y actualiza:
+
+    ```
+    Authorized JavaScript origins:
+    https://tu-proyecto.vercel.app
+
+    Authorized redirect URIs:
+    https://tu-proyecto.vercel.app/api/auth/callback/google
+    ```
+  </Step>
+
+  <Step>
+    ### Actualiza el webhook de Stripe
+
+    En Stripe Dashboard → Webhooks:
+
+    1. Edita tu endpoint
+    2. Cambia la URL a: `https://tu-proyecto.vercel.app/api/stripe/webhooks`
+  </Step>
+</Steps>
+
+---
+
+## Checklist Final
+
+Tu SaaS está listo cuando puedas marcar todo:
+
+| Funcionalidad | Test |
+|--------------|------|
+| Landing page | Visita tu URL y verifica que carga |
+| Login con Google | Haz click en "Iniciar sesión" → "Continuar con Google" |
+| Dashboard | Después de login, deberías ver el dashboard |
+| Checkout | Ve a Pricing → Click en un plan → Proceso de pago |
+| Suscripción activa | Usa tarjeta test `4242 4242 4242 4242` |
+| Panel admin | Ve a `/admin` (necesitas rol admin en la DB) |
+
+<Callout type="info">
+  **Tarjeta de prueba Stripe**: `4242 4242 4242 4242`, cualquier fecha futura, cualquier CVC.
+</Callout>
+
+---
+
+## Próximos Pasos
+
+Ahora que tu MVP está funcionando:
+
+1. **Configura emails** → [Guía de Resend](/docs/email/resend-setup)
+2. **Añade tu dominio** → En Vercel → Settings → Domains
+3. **Pasa a producción Stripe** → Desactiva modo test y usa claves live
+4. **Añade analytics** → Vercel Analytics o Plausible
+5. **Configura SEO** → [Guía de SEO](/docs/seo)
+
+---
+
+## Troubleshooting
+
+<Tabs items={["Error de DB", "Error OAuth", "Error Stripe", "Error Build"]}>
+  <Tab value="Error de DB">
+    **"Can't reach database server"**
+
+    - Verifica que `DATABASE_URL` es correcto
+    - Asegúrate de que la IP de Vercel está permitida en Neon/Railway
+    - Prueba la conexión: `npx prisma db pull`
+  </Tab>
+
+  <Tab value="Error OAuth">
+    **"redirect_uri_mismatch"**
+
+    - Las URLs en Google Console deben coincidir exactamente
+    - Incluye tanto `http://localhost:3000` como tu URL de producción
+    - No olvides `/api/auth/callback/google` al final
+  </Tab>
+
+  <Tab value="Error Stripe">
+    **"No signatures found matching the expected signature"**
+
+    - Verifica que `STRIPE_WEBHOOK_SECRET` es correcto
+    - En desarrollo, usa el secret que te da `stripe listen`
+    - En producción, usa el secret del dashboard de Stripe
+  </Tab>
+
+  <Tab value="Error Build">
+    **"Build failed"**
+
+    - Revisa que todas las variables de entorno están en Vercel
+    - Ejecuta `npm run build` localmente para ver errores
+    - Verifica los logs en Vercel → Deployments → View logs
+  </Tab>
+</Tabs>
+
+---
+
+## Resumen
+
+En 5 minutos has configurado:
+
+```
+✅ Base de datos PostgreSQL (Neon)
+✅ Autenticación con Google OAuth
+✅ Pagos con Stripe (checkout + suscripciones)
+✅ Landing page personalizada
+✅ Deploy en Vercel (producción)
+```
+
+**Tu SaaS está listo para recibir usuarios y cobrar.**
+
+¿Necesitas ayuda? [Únete a nuestra comunidad en Discord](https://discord.gg/empiezatusaas)

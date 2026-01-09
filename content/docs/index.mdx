@@ -4,7 +4,7 @@ description: El boilerplate definitivo para lanzar tu SaaS en tiempo récord con
 ---
 
 import { Cards, Card } from 'fumadocs-ui/components/card';
-import { Rocket, Shield, CreditCard, Mail, Palette, Search, Server } from 'lucide-react';
+import { Rocket, Shield, CreditCard, Mail, Palette, Search, Server, Globe, Users, Layout, BookOpen, FileText } from 'lucide-react';
 
 # Bienvenido a EmpiezaTuSaaS
 
@@ -41,7 +41,7 @@ EmpiezaTuSaaS te ofrece **dos caminos** de implementación para que elijas el qu
   <Card
     icon={<Shield className="w-6 h-6" />}
     title="Autenticación"
-    description="Email/password, social login, magic links y 2FA."
+    description="Email/password, social login y magic links."
     href="/docs/authentication"
   />
   <Card
@@ -67,6 +67,49 @@ EmpiezaTuSaaS te ofrece **dos caminos** de implementación para que elijas el qu
     title="SEO Optimizado"
     description="Metadata, sitemap y datos estructurados configurados."
     href="/docs/seo"
+  />
+  <Card
+    icon={<Globe className="w-6 h-6" />}
+    title="Multilenguaje"
+    description="Soporte para múltiples idiomas con next-intl (ES/EN)."
+    href="/docs/features/i18n"
+  />
+  <Card
+    icon={<Users className="w-6 h-6" />}
+    title="Panel de Admin"
+    description="Gestión de usuarios, roles y permisos."
+    href="/docs/features/admin"
+  />
+  <Card
+    icon={<Layout className="w-6 h-6" />}
+    title="Landing Pages"
+    description="3 variantes de landing: principal, waitlist y presale."
+    href="/docs/features/landing-pages"
+  />
+  <Card
+    icon={<FileText className="w-6 h-6" />}
+    title="Blog Integrado"
+    description="Sistema de blog con MDX, embeds y SEO optimizado."
+    href="/docs/blog"
+  />
+</Cards>
+
+## Tutoriales
+
+¿Nuevo aquí? Sigue nuestros tutoriales paso a paso para aprender a usar EmpiezaTuSaaS.
+
+<Cards>
+  <Card
+    icon={<BookOpen className="w-6 h-6" />}
+    title="Ship in 5 Minutes"
+    description="Lanza tu SaaS en 5 minutos con esta guía rápida."
+    href="/docs/tutorials/ship-in-5-minutes"
+  />
+  <Card
+    icon={<Rocket className="w-6 h-6" />}
+    title="Todos los tutoriales"
+    description="Guías paso a paso para funcionalidades comunes."
+    href="/docs/tutorials"
   />
 </Cards>
 

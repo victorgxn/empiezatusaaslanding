@@ -1,0 +1,110 @@
+---
+title: Crear una página estática
+description: Aprende a añadir nuevas páginas a tu aplicación
+---
+
+# Crear una página estática
+
+En Next.js, crear una nueva página es tan simple como crear un archivo. Aquí te mostramos cómo.
+
+## Estructura de archivos
+
+Las páginas van en la carpeta `app/`. El nombre de la carpeta determina la URL:
+
+```
+app/
+├── (marketing)/         # Grupo de rutas públicas
+│   ├── page.tsx        # → /
+│   ├── about/
+│   │   └── page.tsx    # → /about
+│   └── contact/
+│       └── page.tsx    # → /contact
+```
+
+## Crear una página "Sobre Nosotros"
+
+### 1. Crea el archivo
+
+```bash
+mkdir -p app/\(marketing\)/about
+touch app/\(marketing\)/about/page.tsx
+```
+
+### 2. Añade el contenido
+
+```tsx title="app/(marketing)/about/page.tsx"
+import { Metadata } from "next";
+import { Navbar, Footer } from "@/components/landing";
+
+export const metadata: Metadata = {
+  title: "Sobre Nosotros | Tu SaaS",
+  description: "Conoce más sobre nuestra empresa y misión",
+};
+
+export default function AboutPage() {
+  return (
+    <div className="flex min-h-screen flex-col">
+      <Navbar />
+      <main className="flex-1 container mx-auto px-4 py-20">
+        <h1 className="text-4xl font-bold mb-6">Sobre Nosotros</h1>
+        <p className="text-lg text-muted-foreground">
+          Tu contenido aquí...
+        </p>
+      </main>
+      <Footer />
+    </div>
+  );
+}
+```
+
+### 3. Añade la ruta al navbar (opcional)
+
+Edita `config/nav.ts`:
+
+```typescript
+export const marketingNav = [
+  { title: "Características", href: "/#features" },
+  { title: "Precios", href: "/pricing" },
+  { title: "Sobre Nosotros", href: "/about" }, // Nueva ruta
+  { title: "Blog", href: "/blog" },
+];
+```
+
+## Páginas con layouts
+
+Si quieres que la página use el layout de marketing automáticamente, colócala dentro de `(marketing)`:
+
+```tsx title="app/(marketing)/about/page.tsx"
+// Este archivo automáticamente usa el layout de marketing
+// que incluye Navbar y Footer
+
+export default function AboutPage() {
+  return (
+    <div className="container mx-auto px-4 py-20">
+      <h1 className="text-4xl font-bold mb-6">Sobre Nosotros</h1>
+      {/* ... */}
+    </div>
+  );
+}
+```
+
+## SEO y Metadata
+
+Siempre incluye metadata para SEO:
+
+```tsx
+export const metadata: Metadata = {
+  title: "Título de la página | Tu SaaS",
+  description: "Descripción para motores de búsqueda",
+  openGraph: {
+    title: "Título para redes sociales",
+    description: "Descripción para compartir",
+    type: "website",
+  },
+};
+```
+
+## Próximos pasos
+
+- [Crear páginas protegidas](/docs/tutorials/protected-pages)
+- [Optimizar SEO](/docs/seo/metadata)

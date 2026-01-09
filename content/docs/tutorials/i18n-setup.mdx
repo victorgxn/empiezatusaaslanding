@@ -1,0 +1,560 @@
+---
+title: Configurar Multilenguaje (i18n)
+description: Guía completa para implementar soporte multiidioma en tu SaaS
+---
+
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Files, File, Folder } from 'fumadocs-ui/components/files';
+
+# Configurar Multilenguaje (i18n)
+
+En este tutorial configurarás soporte completo para múltiples idiomas usando next-intl. Al finalizar tendrás:
+
+- Detección automática del idioma del navegador
+- Selector de idioma funcional
+- URLs con prefijo de idioma (/en/, /pt/)
+- Traducciones type-safe con autocompletado
+
+## Arquitectura
+
+<Files>
+  <Folder name="i18n" defaultOpen>
+    <File name="routing.ts" />
+    <File name="request.ts" />
+  </Folder>
+  <Folder name="messages" defaultOpen>
+    <File name="es.json" />
+    <File name="en.json" />
+  </Folder>
+  <Folder name="components">
+    <File name="language-switcher.tsx" />
+  </Folder>
+  <File name="proxy.ts" />
+  <File name="next.config.ts" />
+</Files>
+
+## Paso 1: Instalar dependencias
+
+```bash
+npm install next-intl
+```
+
+## Paso 2: Configurar routing
+
+Crea la configuración de idiomas disponibles:
+
+```typescript title="i18n/routing.ts"
+import { defineRouting } from "next-intl/routing";
+
+export const routing = defineRouting({
+  // Idiomas soportados
+  locales: ["es", "en"],
+
+  // Idioma por defecto
+  defaultLocale: "es",
+
+  // Solo añade prefijo para idiomas no-default
+  // "as-needed" → /about (español), /en/about (inglés)
+  // "always" → /es/about, /en/about
+  localePrefix: "as-needed",
+
+  // Cookie para persistir preferencia
+  localeCookie: {
+    name: "NEXT_LOCALE",
+    maxAge: 60 * 60 * 24 * 365, // 1 año
+  },
+});
+
+export type Locale = (typeof routing.locales)[number];
+```
+
+## Paso 3: Configurar request handler
+
+```typescript title="i18n/request.ts"
+import { getRequestConfig } from "next-intl/server";
+import { routing } from "./routing";
+
+export default getRequestConfig(async ({ requestLocale }) => {
+  // Obtener locale del request
+  let locale = await requestLocale;
+
+  // Validar que sea un locale soportado
+  if (!locale || !routing.locales.includes(locale as (typeof routing.locales)[number])) {
+    locale = routing.defaultLocale;
+  }
+
+  return {
+    locale,
+    messages: (await import(`../messages/${locale}.json`)).default,
+  };
+});
+```
+
+## Paso 4: Configurar Next.js
+
+```typescript title="next.config.ts"
+import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
+
+const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
+
+const nextConfig: NextConfig = {
+  // ...tu configuración
+};
+
+export default withNextIntl(nextConfig);
+```
+
+## Paso 5: Configurar middleware (proxy.ts)
+
+En Next.js 16, el middleware se llama `proxy.ts`:
+
+```typescript title="proxy.ts"
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import createIntlMiddleware from "next-intl/middleware";
+import { routing } from "./i18n/routing";
+
+// Crear el handler de internacionalización
+const intlProxy = createIntlMiddleware(routing);
+
+export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Excluir rutas que no necesitan i18n
+  if (
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/_next") ||
+    pathname.includes(".")
+  ) {
+    return NextResponse.next();
+  }
+
+  // Aplicar middleware de i18n
+  return intlProxy(request);
+}
+
+export const config = {
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)"],
+};
+```
+
+<Callout type="warning">
+En Next.js 15 y anteriores, el archivo se llama `middleware.ts` y la función `middleware()`.
+</Callout>
+
+## Paso 6: Crear archivos de traducción
+
+<Tabs items={['Español', 'Inglés']}>
+  <Tab value="Español">
+    ```json title="messages/es.json"
+    {
+      "common": {
+        "loading": "Cargando...",
+        "error": "Ha ocurrido un error",
+        "save": "Guardar",
+        "cancel": "Cancelar",
+        "delete": "Eliminar",
+        "edit": "Editar"
+      },
+      "nav": {
+        "home": "Inicio",
+        "features": "Características",
+        "pricing": "Precios",
+        "docs": "Documentación",
+        "signIn": "Iniciar sesión",
+        "signUp": "Registrarse",
+        "dashboard": "Dashboard"
+      },
+      "hero": {
+        "title": "Lanza tu SaaS en tiempo récord",
+        "subtitle": "Todo lo que necesitas para crear, lanzar y escalar tu producto",
+        "cta": "Empezar ahora",
+        "ctaSecondary": "Ver demo"
+      },
+      "auth": {
+        "signIn": {
+          "title": "Iniciar sesión",
+          "description": "Ingresa tus credenciales para acceder",
+          "email": "Email",
+          "password": "Contraseña",
+          "forgotPassword": "¿Olvidaste tu contraseña?",
+          "submit": "Iniciar sesión",
+          "noAccount": "¿No tienes cuenta?",
+          "register": "Regístrate"
+        },
+        "signUp": {
+          "title": "Crear cuenta",
+          "description": "Completa el formulario para registrarte",
+          "name": "Nombre",
+          "email": "Email",
+          "password": "Contraseña",
+          "confirmPassword": "Confirmar contraseña",
+          "submit": "Crear cuenta",
+          "hasAccount": "¿Ya tienes cuenta?",
+          "login": "Inicia sesión"
+        }
+      },
+      "dashboard": {
+        "welcome": "¡Bienvenido, {name}!",
+        "stats": {
+          "plan": "Tu plan actual",
+          "status": "Estado de cuenta",
+          "lastLogin": "Último acceso"
+        }
+      },
+      "footer": {
+        "rights": "Todos los derechos reservados",
+        "terms": "Términos de servicio",
+        "privacy": "Política de privacidad"
+      }
+    }
+    ```
+  </Tab>
+
+  <Tab value="Inglés">
+    ```json title="messages/en.json"
+    {
+      "common": {
+        "loading": "Loading...",
+        "error": "An error occurred",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit"
+      },
+      "nav": {
+        "home": "Home",
+        "features": "Features",
+        "pricing": "Pricing",
+        "docs": "Documentation",
+        "signIn": "Sign in",
+        "signUp": "Sign up",
+        "dashboard": "Dashboard"
+      },
+      "hero": {
+        "title": "Launch your SaaS in record time",
+        "subtitle": "Everything you need to create, launch and scale your product",
+        "cta": "Get started",
+        "ctaSecondary": "View demo"
+      },
+      "auth": {
+        "signIn": {
+          "title": "Sign in",
+          "description": "Enter your credentials to access",
+          "email": "Email",
+          "password": "Password",
+          "forgotPassword": "Forgot password?",
+          "submit": "Sign in",
+          "noAccount": "Don't have an account?",
+          "register": "Sign up"
+        },
+        "signUp": {
+          "title": "Create account",
+          "description": "Fill the form to register",
+          "name": "Name",
+          "email": "Email",
+          "password": "Password",
+          "confirmPassword": "Confirm password",
+          "submit": "Create account",
+          "hasAccount": "Already have an account?",
+          "login": "Sign in"
+        }
+      },
+      "dashboard": {
+        "welcome": "Welcome, {name}!",
+        "stats": {
+          "plan": "Your current plan",
+          "status": "Account status",
+          "lastLogin": "Last login"
+        }
+      },
+      "footer": {
+        "rights": "All rights reserved",
+        "terms": "Terms of service",
+        "privacy": "Privacy policy"
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Paso 7: Crear selector de idioma
+
+```tsx title="components/language-switcher.tsx"
+"use client";
+
+import { useLocale } from "next-intl";
+import { useRouter, usePathname } from "next/navigation";
+import { routing, type Locale } from "@/i18n/routing";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Globe } from "lucide-react";
+
+const localeNames: Record<Locale, string> = {
+  es: "Español",
+  en: "English",
+};
+
+const localeFlags: Record<Locale, string> = {
+  es: "🇪🇸",
+  en: "🇺🇸",
+};
+
+export function LanguageSwitcher() {
+  const locale = useLocale() as Locale;
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const handleLocaleChange = (newLocale: Locale) => {
+    // Remover el prefijo de idioma actual si existe
+    let newPath = pathname;
+
+    for (const loc of routing.locales) {
+      if (pathname.startsWith(`/${loc}/`)) {
+        newPath = pathname.replace(`/${loc}`, "");
+        break;
+      } else if (pathname === `/${loc}`) {
+        newPath = "/";
+        break;
+      }
+    }
+
+    // Añadir nuevo prefijo si no es el idioma por defecto
+    if (newLocale !== routing.defaultLocale) {
+      newPath = `/${newLocale}${newPath}`;
+    }
+
+    // Guardar preferencia en cookie
+    document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=31536000`;
+
+    router.push(newPath);
+    router.refresh();
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="gap-2">
+          <Globe className="h-4 w-4" />
+          <span>{localeFlags[locale]}</span>
+          <span className="hidden sm:inline">{localeNames[locale]}</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        {routing.locales.map((loc) => (
+          <DropdownMenuItem
+            key={loc}
+            onClick={() => handleLocaleChange(loc)}
+            className={locale === loc ? "bg-accent" : ""}
+          >
+            <span className="mr-2">{localeFlags[loc]}</span>
+            {localeNames[loc]}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+```
+
+## Paso 8: Usar traducciones
+
+### En Server Components
+
+```tsx title="app/page.tsx"
+import { getTranslations } from "next-intl/server";
+
+export default async function HomePage() {
+  const t = await getTranslations("hero");
+
+  return (
+    <section>
+      <h1>{t("title")}</h1>
+      <p>{t("subtitle")}</p>
+      <button>{t("cta")}</button>
+    </section>
+  );
+}
+```
+
+### En Client Components
+
+```tsx title="components/dashboard-welcome.tsx"
+"use client";
+
+import { useTranslations } from "next-intl";
+
+export function DashboardWelcome({ name }: { name: string }) {
+  const t = useTranslations("dashboard");
+
+  return (
+    <h1>
+      {t("welcome", { name })}
+    </h1>
+  );
+}
+```
+
+### Con plurales
+
+```json title="messages/es.json"
+{
+  "items": {
+    "count": "{count, plural, =0 {No hay items} one {# item} other {# items}}"
+  }
+}
+```
+
+```tsx
+t("items.count", { count: 0 });  // "No hay items"
+t("items.count", { count: 1 });  // "1 item"
+t("items.count", { count: 5 });  // "5 items"
+```
+
+## Paso 9: Añadir nuevo idioma
+
+<Steps>
+<Step>
+Actualiza `i18n/routing.ts`:
+
+```typescript
+export const routing = defineRouting({
+  locales: ["es", "en", "pt"], // Añadir portugués
+  defaultLocale: "es",
+});
+```
+</Step>
+
+<Step>
+Crea el archivo de traducción:
+
+```bash
+cp messages/en.json messages/pt.json
+```
+
+Traduce el contenido a portugués.
+</Step>
+
+<Step>
+Actualiza el selector de idioma:
+
+```typescript title="components/language-switcher.tsx"
+const localeNames: Record<Locale, string> = {
+  es: "Español",
+  en: "English",
+  pt: "Português",
+};
+
+const localeFlags: Record<Locale, string> = {
+  es: "🇪🇸",
+  en: "🇺🇸",
+  pt: "🇧🇷",
+};
+```
+</Step>
+</Steps>
+
+## Validar traducciones
+
+Crea un script para detectar traducciones faltantes:
+
+```javascript title="scripts/validate-translations.js"
+const fs = require("fs");
+const path = require("path");
+
+const messagesDir = path.join(__dirname, "..", "messages");
+const files = fs.readdirSync(messagesDir).filter((f) => f.endsWith(".json"));
+
+// Cargar todos los archivos de traducción
+const translations = {};
+for (const file of files) {
+  const locale = file.replace(".json", "");
+  translations[locale] = JSON.parse(
+    fs.readFileSync(path.join(messagesDir, file), "utf8")
+  );
+}
+
+// Función para obtener todas las claves de un objeto
+function getAllKeys(obj, prefix = "") {
+  let keys = [];
+  for (const [key, value] of Object.entries(obj)) {
+    const fullKey = prefix ? `${prefix}.${key}` : key;
+    if (typeof value === "object" && value !== null) {
+      keys = keys.concat(getAllKeys(value, fullKey));
+    } else {
+      keys.push(fullKey);
+    }
+  }
+  return keys;
+}
+
+// Obtener todas las claves del idioma por defecto (español)
+const defaultKeys = getAllKeys(translations.es);
+const locales = Object.keys(translations);
+
+console.log(`\n📋 Validando traducciones...\n`);
+console.log(`Idiomas: ${locales.join(", ")}`);
+console.log(`Total de claves: ${defaultKeys.length}\n`);
+
+// Verificar cada idioma
+let hasErrors = false;
+for (const locale of locales) {
+  if (locale === "es") continue;
+
+  const localeKeys = getAllKeys(translations[locale]);
+  const missing = defaultKeys.filter((k) => !localeKeys.includes(k));
+  const extra = localeKeys.filter((k) => !defaultKeys.includes(k));
+
+  if (missing.length > 0) {
+    hasErrors = true;
+    console.log(`❌ ${locale}: Faltan ${missing.length} traducciones:`);
+    missing.forEach((k) => console.log(`   - ${k}`));
+  }
+
+  if (extra.length > 0) {
+    console.log(`⚠️  ${locale}: ${extra.length} claves extra (no en español):`);
+    extra.forEach((k) => console.log(`   - ${k}`));
+  }
+
+  if (missing.length === 0 && extra.length === 0) {
+    console.log(`✅ ${locale}: Todas las traducciones completas`);
+  }
+}
+
+process.exit(hasErrors ? 1 : 0);
+```
+
+```bash
+node scripts/validate-translations.js
+```
+
+## Mejores prácticas
+
+<Callout type="info" title="Recomendaciones">
+- Usa el formato ICU para plurales y selects
+- Mantén las claves en español como base
+- Agrupa traducciones por sección/componente
+- Usa la extensión [i18n Ally](https://marketplace.visualstudio.com/items?itemName=Lokalise.i18n-ally) en VS Code
+</Callout>
+
+## Resumen
+
+Has configurado:
+
+- ✅ next-intl con español e inglés
+- ✅ Selector de idioma funcional
+- ✅ URLs con prefijos de idioma
+- ✅ Traducciones en Server y Client Components
+- ✅ Script de validación de traducciones
+
+## Siguiente paso
+
+- [Documentación de next-intl](https://next-intl.dev/docs/getting-started)

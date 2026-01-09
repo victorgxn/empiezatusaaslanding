@@ -1,0 +1,188 @@
+---
+title: Multilenguaje (i18n)
+description: Soporte para múltiples idiomas con next-intl
+---
+
+# Multilenguaje (i18n)
+
+EmpiezaTuSaaS viene con soporte para múltiples idiomas usando [next-intl](https://next-intl.dev/). Por defecto incluye español e inglés.
+
+## Características
+
+- **Detección automática**: Detecta el idioma del navegador
+- **Persistencia**: Guarda preferencia en cookie
+- **SEO friendly**: URLs con prefijo de idioma
+- **Type-safe**: Autocompletado de claves de traducción
+- **Selector de idioma**: Componente listo para usar
+
+## Configuración
+
+### Idiomas soportados
+
+Los idiomas se definen en `i18n/routing.ts`:
+
+```typescript
+export const routing = defineRouting({
+  locales: ["es", "en"],
+  defaultLocale: "es",
+  localePrefix: "as-needed", // Solo añade prefijo si no es el idioma por defecto
+});
+```
+
+### Archivos de traducción
+
+Las traducciones están en `messages/`:
+
+```
+messages/
+├── es.json    # Español (idioma por defecto)
+└── en.json    # Inglés
+```
+
+## Uso
+
+### En Server Components
+
+```tsx
+import { getTranslations } from "next-intl/server";
+
+export default async function Page() {
+  const t = await getTranslations("hero");
+
+  return <h1>{t("title")}</h1>;
+}
+```
+
+### En Client Components
+
+```tsx
+"use client";
+
+import { useTranslations } from "next-intl";
+
+export function MyComponent() {
+  const t = useTranslations("hero");
+
+  return <h1>{t("title")}</h1>;
+}
+```
+
+### Con parámetros
+
+```json title="messages/es.json"
+{
+  "greeting": "Hola, {name}!"
+}
+```
+
+```tsx
+t("greeting", { name: "Usuario" });
+// → "Hola, Usuario!"
+```
+
+### Plurales
+
+```json title="messages/es.json"
+{
+  "items": "{count, plural, =0 {Sin items} one {# item} other {# items}}"
+}
+```
+
+```tsx
+t("items", { count: 5 });
+// → "5 items"
+```
+
+## Selector de idioma
+
+El componente `LanguageSwitcher` ya está incluido en el navbar:
+
+```tsx
+import { LanguageSwitcher } from "@/components/language-switcher";
+
+export function Navbar() {
+  return (
+    <nav>
+      {/* ... */}
+      <LanguageSwitcher />
+    </nav>
+  );
+}
+```
+
+## Añadir un nuevo idioma
+
+### 1. Actualiza la configuración
+
+```typescript title="i18n/routing.ts"
+export const routing = defineRouting({
+  locales: ["es", "en", "pt"], // Añade el nuevo idioma
+  defaultLocale: "es",
+});
+```
+
+### 2. Crea el archivo de traducción
+
+```bash
+cp messages/en.json messages/pt.json
+```
+
+Edita `messages/pt.json` con las traducciones en portugués.
+
+### 3. Actualiza el selector de idioma
+
+```typescript title="components/language-switcher.tsx"
+const localeNames: Record<Locale, string> = {
+  es: "Español",
+  en: "English",
+  pt: "Português", // Nuevo
+};
+```
+
+## Estructura de traducciones
+
+Las traducciones están organizadas por sección:
+
+```json
+{
+  "common": {
+    "loading": "Cargando...",
+    "error": "Error"
+  },
+  "nav": {
+    "features": "Características",
+    "pricing": "Precios"
+  },
+  "hero": {
+    "title": "El boilerplate...",
+    "subtitle": "Autenticación, pagos..."
+  }
+}
+```
+
+## URLs por idioma
+
+Con `localePrefix: "as-needed"`:
+
+- Español (default): `/about`
+- Inglés: `/en/about`
+
+Para forzar prefijo siempre, usa `localePrefix: "always"`.
+
+## Tips
+
+### Extraer textos automáticamente
+
+Usa la extensión de VS Code [i18n Ally](https://marketplace.visualstudio.com/items?itemName=Lokalise.i18n-ally) para gestionar traducciones.
+
+### Validar traducciones faltantes
+
+```bash
+# Script de validación (crear)
+node scripts/validate-translations.js
+```
+
+## Recursos
+
+- [Documentación de next-intl](https://next-intl.dev/docs/getting-started)
+- [Formato ICU](https://formatjs.io/docs/core-concepts/icu-syntax/)

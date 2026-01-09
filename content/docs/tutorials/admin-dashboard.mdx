@@ -1,0 +1,334 @@
+---
+title: Configurar Panel de Admin
+description: Guía paso a paso para configurar y personalizar el panel de administración
+---
+
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+# Configurar Panel de Admin
+
+En este tutorial aprenderás a configurar el panel de administración completo para gestionar usuarios, roles y métricas de tu SaaS.
+
+## Requisitos previos
+
+- Tener el proyecto configurado con Better Auth
+- Base de datos PostgreSQL funcionando
+- Al menos un usuario registrado
+
+## Paso 1: Verificar Better Auth Admin Plugin
+
+El plugin de admin ya está configurado en `lib/auth.ts`:
+
+```typescript title="lib/auth.ts"
+import { admin } from "better-auth/plugins";
+
+export const auth = betterAuth({
+  // ...otras configuraciones
+  plugins: [
+    admin({
+      defaultRole: "user",
+      adminRoles: ["admin", "superadmin"],
+    }),
+  ],
+});
+```
+
+<Callout type="info">
+Los roles disponibles son: `user`, `admin` y `superadmin`. Solo `admin` y `superadmin` pueden acceder al panel.
+</Callout>
+
+## Paso 2: Crear tu primer administrador
+
+<Tabs items={['Prisma Studio', 'SQL Directo', 'Script']}>
+  <Tab value="Prisma Studio">
+    ```bash
+    npx prisma studio
+    ```
+
+    1. Abre Prisma Studio en `http://localhost:5555`
+    2. Navega a la tabla `users`
+    3. Encuentra tu usuario y cambia `role` a `admin`
+    4. Guarda los cambios
+  </Tab>
+
+  <Tab value="SQL Directo">
+    ```sql
+    UPDATE users
+    SET role = 'admin'
+    WHERE email = 'tu@email.com';
+    ```
+  </Tab>
+
+  <Tab value="Script">
+    Crea un script temporal:
+
+    ```typescript title="scripts/create-admin.ts"
+    import { db } from "@/lib/db";
+
+    async function createAdmin() {
+      const email = process.argv[2];
+
+      if (!email) {
+        console.error("Uso: npx tsx scripts/create-admin.ts tu@email.com");
+        process.exit(1);
+      }
+
+      const user = await db.user.update({
+        where: { email },
+        data: { role: "admin" },
+      });
+
+      console.log(`✅ Usuario ${user.email} ahora es admin`);
+    }
+
+    createAdmin();
+    ```
+
+    ```bash
+    npx tsx scripts/create-admin.ts tu@email.com
+    ```
+  </Tab>
+</Tabs>
+
+## Paso 3: Acceder al panel
+
+1. Inicia sesión con tu cuenta de admin
+2. Navega a `/admin`
+3. Verás el dashboard con estadísticas
+
+## Paso 4: Gestionar usuarios
+
+### Ver lista de usuarios
+
+En `/admin/users` encontrarás una tabla con todos los usuarios:
+
+- **Búsqueda**: Filtra por nombre o email
+- **Ordenación**: Por fecha de registro, nombre, email
+- **Paginación**: Navega entre páginas de resultados
+
+### Acciones disponibles
+
+Para cada usuario puedes:
+
+| Acción | Descripción | Rol requerido |
+|--------|-------------|---------------|
+| Ver perfil | Información detallada | admin |
+| Cambiar rol | Asignar admin/user | superadmin |
+| Banear | Bloquear acceso | admin |
+| Desbanear | Restaurar acceso | admin |
+| Impersonar | Iniciar sesión como usuario | superadmin |
+
+```typescript title="Ejemplo: Cambiar rol de usuario"
+import { admin } from "@/lib/auth-client";
+
+// Desde el cliente (componente React)
+const handleSetRole = async (userId: string, role: string) => {
+  try {
+    await admin.setRole({
+      userId,
+      role, // "user" | "admin" | "superadmin"
+    });
+    toast.success("Rol actualizado");
+  } catch (error) {
+    toast.error("Error al cambiar rol");
+  }
+};
+```
+
+## Paso 5: Configurar Analytics
+
+La página de analytics en `/admin/analytics` muestra:
+
+### Métricas principales
+
+- **Usuarios totales** con % de crecimiento mensual
+- **Nuevos registros** este mes y semana
+- **Suscripciones activas** con tasa de conversión
+- **MRR estimado** (Monthly Recurring Revenue)
+
+### Gráfico de registros
+
+Visualiza los registros de los últimos 30 días:
+
+```typescript title="app/api/admin/analytics/route.ts"
+// Agrupar usuarios por día
+const last30Days = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+const usersByDay = await db.user.groupBy({
+  by: ["createdAt"],
+  where: { createdAt: { gte: last30Days } },
+  _count: true,
+});
+```
+
+### Añadir nuevas métricas
+
+Para añadir métricas personalizadas:
+
+<Steps>
+<Step>
+Edita `app/api/admin/analytics/route.ts`
+</Step>
+
+<Step>
+Añade tu query:
+
+```typescript
+const customMetric = await db.yourModel.count({
+  where: { /* tus condiciones */ },
+});
+```
+</Step>
+
+<Step>
+Inclúyelo en la respuesta:
+
+```typescript
+return NextResponse.json({
+  overview: {
+    // ...métricas existentes
+    customMetric,
+  },
+});
+```
+</Step>
+
+<Step>
+Actualiza el componente en `app/(admin)/admin/analytics/page.tsx`:
+
+```tsx
+<Card>
+  <CardHeader>
+    <CardTitle>Tu Métrica</CardTitle>
+  </CardHeader>
+  <CardContent>
+    <div className="text-2xl font-bold">{data.overview.customMetric}</div>
+  </CardContent>
+</Card>
+```
+</Step>
+</Steps>
+
+## Paso 6: Proteger rutas de admin
+
+El layout de admin verifica automáticamente los permisos:
+
+```typescript title="app/(admin)/layout.tsx"
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+
+export default async function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user) {
+    redirect("/sign-in");
+  }
+
+  // Verificar rol de admin
+  const userRole = session.user.role;
+  if (!["admin", "superadmin"].includes(userRole || "")) {
+    redirect("/dashboard");
+  }
+
+  return (
+    <div className="flex min-h-screen">
+      <AdminSidebar />
+      <main className="flex-1">{children}</main>
+    </div>
+  );
+}
+```
+
+## Paso 7: Añadir nuevas páginas admin
+
+<Steps>
+<Step>
+Crea la página:
+
+```typescript title="app/(admin)/admin/mi-pagina/page.tsx"
+import { AdminHeader } from "@/components/admin";
+
+export default function MiPaginaAdmin() {
+  return (
+    <div className="flex flex-col">
+      <AdminHeader
+        title="Mi Página"
+        description="Descripción de la página"
+      />
+      <div className="flex-1 p-6">
+        {/* Tu contenido */}
+      </div>
+    </div>
+  );
+}
+```
+</Step>
+
+<Step>
+Añade al sidebar:
+
+```typescript title="components/admin/sidebar.tsx"
+const navigation = [
+  // ...otras rutas
+  {
+    name: "Mi Página",
+    href: "/admin/mi-pagina",
+    icon: TuIcono,
+  },
+];
+```
+</Step>
+</Steps>
+
+## Mejores prácticas
+
+<Callout type="warning" title="Seguridad">
+- Nunca expongas acciones de admin sin verificar el rol en el servidor
+- Usa `superadmin` solo para acciones críticas como impersonación
+- Registra las acciones de admin para auditoría
+</Callout>
+
+### Registro de acciones (Audit Log)
+
+Para registrar acciones de admin:
+
+```typescript title="lib/audit.ts"
+export async function logAdminAction(
+  adminId: string,
+  action: string,
+  targetId?: string,
+  details?: Record<string, unknown>
+) {
+  await db.auditLog.create({
+    data: {
+      adminId,
+      action,
+      targetId,
+      details: details ? JSON.stringify(details) : null,
+      createdAt: new Date(),
+    },
+  });
+}
+```
+
+## Resumen
+
+Has configurado:
+
+- ✅ Panel de admin con verificación de roles
+- ✅ Gestión completa de usuarios
+- ✅ Analytics con métricas y gráficos
+- ✅ Estructura para añadir nuevas páginas
+
+## Siguiente paso
+
+- [Configurar i18n](/docs/features/i18n) - Añadir soporte multiidioma al panel
